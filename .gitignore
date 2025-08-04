@@ -1,0 +1,23 @@
+/theme.conf.user
+
+/release
+
+# IDE
+/.idea
+
+# TMP files
+*.bak
+*~
+*.swp
+*.kate-swp
+*.tmp
+
+/.pre-commit-config.yaml
+/.markdownlint.yaml
+
+# Do not add trailing slash for .roo entry, it will not work for symlinked folders
+.roo
+.roomodes
+**/.claude/
+**/CLAUDE.md
+**/CLAUDE.local.md

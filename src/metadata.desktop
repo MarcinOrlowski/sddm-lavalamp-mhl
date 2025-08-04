@@ -1,0 +1,16 @@
+[SddmGreeterTheme]
+Name=Lava Lamp MHL
+Description=Lava Lamp insipired animated SDDM login theme
+Author=Marcin Orlowski
+Copyright=MIT License
+License=MIT
+Type=sddm-theme
+Version=1.0.0
+Website=https://github.com/MarcinOrlowski/sddm-lavalamp-mhl
+MainScript=components/Main.qml
+ConfigFile=theme.conf
+Email=
+Screenshot=preview.webp
+TranslationsDirectory=translations
+Theme-Id=lavalamp-mhl
+Theme-API=2.0
