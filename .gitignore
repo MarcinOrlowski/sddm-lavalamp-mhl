@@ -21,3 +21,6 @@
 **/.claude/
 **/CLAUDE.md
 **/CLAUDE.local.md
+
+build
+/*.deb
