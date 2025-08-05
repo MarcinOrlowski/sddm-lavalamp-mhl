@@ -118,8 +118,8 @@ Version: $VERSION
 Section: kde
 Priority: optional
 Architecture: $ARCH
-Depends: qml-module-qtquick2, qml-module-qtquick-controls, qml-module-qtquick-controls2, qml-module-qtgraphicaleffects
-Recommends: sddm
+Depends: plasma-framework, plasma-workspace
+Recommends: desktop-base (>= 9.0.0~), sddm
 Provides: sddm-theme
 Maintainer: $MAINTAINER
 Description: $DESCRIPTION
