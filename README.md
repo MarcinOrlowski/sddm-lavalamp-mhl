@@ -41,13 +41,31 @@ Style `forest`
 
 ## Installation
 
-To install the Lava Lamp MHL theme, follow these steps:
+You can install Lava Lamp MHL theme in multiple ways:
+ - using KDE store
+ - manually by downloading the ZIP archive
+ - installing packaged version using your distribution's package manager
 
-- open `System settings` panel
-- go to `Settings -> System Settings`
-- search for `SDDM` and open `Login Screen (SDDM)` section
-- On the bottom, click `Get new SDDM Themes...` button
-- Search for `Lava Lamp MHL` and install it
+## KDE Store
+
+To install the Lava Lamp MHL theme from KDE Store, follow these steps:
+
+- Go to `Settings -> System Settings`,
+- Search for `SDDM` and open `Login Screen (SDDM)` section,
+- On the bottom, click `Get new SDDM Themes...` button,
+- Search for `Lava Lamp MHL` and install it.
+- Click `Apply` button to apply the theme.
+
+### Manual installation
+
+- Go to [Releases](https://github.com/MarcinOrlowski/sddm-lavalamp-mhl/releases) section
+- Choose release you need and download ZIP archive of it (`sddm-lavalamp-mhl-<VERSION>.zip`).
+- Go to `Settings -> System Settings`,
+- Search for `SDDM` and open `Login Screen (SDDM)` section,
+- On the bottom, click `Install from file...` button,
+- Select downloaded ZIP archive and click `Open` button,
+- Click `Apply` button to apply the theme.
+
 
 ## Configuration
 
