@@ -10,13 +10,13 @@
 
 Table of contents
 
-* [What is it?](#what-is-it)
-* [Installation](#installation)
-* [Configuration](#configuration)
-* [License](#license)
-* [Changelog](CHANGES.md)
+- [What is it?](#what-is-it)
+- [Installation](#installation)
+- [Configuration](#configuration)
+- [License](#license)
+- [Changelog](CHANGES.md)
 
----
+______________________________________________________________________
 
 ## What is it?
 
@@ -27,24 +27,25 @@ appealing and to provide a unique and engaging user experience. Comes in three d
 
 ### Styles
 
-Style `heat`
+#### Style `heat`
 
 ![Lava Lamp MHL Style Heat](img/preview-heat.webp)
 
-Style `ocean`
+#### Style `ocean`
+
 ![Lava Lamp MHL Style Ocean](img/preview-ocean.webp)
 
-Style `forest`
-![Lava Lamp MHL Style Forest](img/preview-forest.webp)
+#### Style `forest`
 
----
+![Lava Lamp MHL Style Forest](img/preview-forest.webp)
 
 ## Installation
 
 You can install Lava Lamp MHL theme in multiple ways:
- - using KDE store
- - manually by downloading the ZIP archive
- - installing Debian/Ubuntu package (.deb)
+
+- using KDE store
+- manually by downloading the ZIP archive
+- installing Debian/Ubuntu package (.deb)
 
 ### KDE Store
 
@@ -95,7 +96,7 @@ in that file.
 
 ## License
 
-* Written and copyrighted &copy;2025 by Marcin Orlowski <mail (#) MarcinOrlowski (.) com>
-* Lava Lamp MHL is open-source software licensed under
+- Written and copyrighted ©2025 by Marcin Orlowski \<mail (#) MarcinOrlowski (.) com>
+- Lava Lamp MHL is open-source software licensed under
   the [MIT license](http://opensource.org/licenses/MIT)
-* SVG icons from: https://www.svgrepo.com/
+- SVG icons from: https://www.svgrepo.com/
