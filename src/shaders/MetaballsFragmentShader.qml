@@ -94,7 +94,6 @@ QtObject {
         }
 
         vec3 getMetaball(int index) {
-            // Create deterministic but varied positions based on index + random seed
             float seed = (float(index) + randomSeed) * 12.9898;
             float randomX = fract(sin(seed) * 43758.5453);
             float randomY = fract(sin(seed * 1.618) * 43758.5453);
@@ -166,7 +165,6 @@ QtObject {
 
             float sum = 0.0;
 
-            // Process exact number of metaballs needed
             for (int i = 0; i < {{MAX_METABALLS}}; i++) {
                 vec3 metaball = getMetaball(i);
                 float dx = metaball.x - x;

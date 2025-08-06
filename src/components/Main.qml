@@ -689,9 +689,9 @@ Rectangle {
                         anchors.left: parent.left
                         anchors.leftMargin: 10
                         anchors.verticalCenter: parent.verticalCenter
-                        color: "#E8F0FF"
+                        color: themeConfig.uiTextColor
                         font.pixelSize: 14
-                        font.family: "Arial"
+                        font.family: themeConfig.uiFont
                         text: sessionListView.currentItem ? sessionListView.currentItem.itemText : ""
                     }
 
@@ -699,7 +699,7 @@ Rectangle {
                         anchors.right: parent.right
                         anchors.rightMargin: 10
                         anchors.verticalCenter: parent.verticalCenter
-                        color: "#B8D0FF"
+                        color: themeConfig.uiTextColor
                         font.pixelSize: 12
                         text: session.expanded ? "▲" : "▼"
                     }
@@ -738,7 +738,7 @@ Rectangle {
                             delegate: Rectangle {
                                 width: sessionListView.width
                                 height: 30
-                                color: delegateMouseArea.containsMouse ? "#2A3A5A" : "transparent"
+                                color: delegateMouseArea.containsMouse ? Qt.darker(themeConfig.uiPrimaryColor, 1.3) : "transparent"
 
                                 property string itemText: model.name || model.modelData || model
 
@@ -746,9 +746,9 @@ Rectangle {
                                     anchors.left: parent.left
                                     anchors.leftMargin: 10
                                     anchors.verticalCenter: parent.verticalCenter
-                                    color: "#E8F0FF"
+                                    color: themeConfig.uiTextColor
                                     font.pixelSize: 13
-                                    font.family: "Arial"
+                                    font.family: themeConfig.uiFont
                                     text: parent.itemText
                                 }
 
