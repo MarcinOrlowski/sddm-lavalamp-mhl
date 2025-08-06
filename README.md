@@ -1,14 +1,6 @@
-```ascii
-█                       █                        █▀▄▀█ █  █ █
-█    ▄▀▀▄ █  █ ▄▀▀▄     █    ▄▀▀▄ █▀█▀▄ █▀▀▄     █ █ █ █▀▀█ █
-█     ▄▄█ █  █  ▄▄█     █     ▄▄█ █ █ █ █  █     █   █ █  █ █
-█▄▄▄ ▀▄▄▀ ▀▄▀  ▀▄▄▀     █▄▄▄ ▀▄▄▀ █   █ █▄▄▀     █   █ █  █ █▄▄▄
-          Animated SDDM Theme           █        Marcin Orlowski
-```
+![Lava Lamp MHL Logo](img/logo.svg)
 
 # Lava Lamp animated SDDM theme
-
-Table of contents
 
 - [What is it?](#what-is-it)
 - [Installation](#installation)
@@ -21,21 +13,23 @@ ______________________________________________________________________
 ## What is it?
 
 Lava Lamp is an animated [SDDM dynamic theme](https://github.com/sddm/sddm/) stylized after the
-classic lava lamp. It features a mesmerizing animation of colorful blobs that move and change
-shape, creating a relaxing and soothing visual effect. The theme is designed to be visually
-appealing and to provide a unique and engaging user experience. Comes in three different styles!
+classic [lava lamp](https://wikipedia.org/wiki/Lava_lamp). It features a mesmerizing animation of
+colorful blobs that move and change shape, creating a relaxing and soothing visual effect. The theme
+is designed to be visually appealing and to provide a unique and engaging user experience.
 
-### Styles
+### Themes
 
-#### Style `heat`
+Comes in multiple color themes to suit your liking.
+
+#### Heat
 
 ![Lava Lamp MHL Style Heat](img/preview-heat.webp)
 
-#### Style `ocean`
+#### Ocean
 
 ![Lava Lamp MHL Style Ocean](img/preview-ocean.webp)
 
-#### Style `forest`
+#### Forest
 
 ![Lava Lamp MHL Style Forest](img/preview-forest.webp)
 
@@ -43,13 +37,14 @@ appealing and to provide a unique and engaging user experience. Comes in three d
 
 You can install Lava Lamp MHL theme in multiple ways:
 
-- using KDE store
+- using buiKDE store
 - manually by downloading the ZIP archive
 - installing Debian/Ubuntu package (.deb)
 
 ### KDE Store
 
-To install the Lava Lamp MHL theme from KDE Store, follow these steps:
+To install the Lava Lamp MHL theme from KDE Store using KDE built-in UI,
+follow these steps:
 
 - Go to `Settings -> System Settings`,
 - Search for `SDDM` and open `Login Screen (SDDM)` section,
@@ -86,13 +81,22 @@ For Debian and Ubuntu users, you can install the theme using a `.deb` package:
   - Select `Lava Lamp MHL` from the theme list
   - Click `Apply`
 
-**Note:** The package prevents accidental removal if the theme is currently active. To remove the package, first change to another theme, then run `sudo apt remove sddm-theme-lavalamp-mhl`.
+**Note:** The package prevents accidental removal if the theme is currently active. To remove the
+package, first change to another theme, then run `sudo apt remove sddm-theme-lavalamp-mhl`.
 
 ## Configuration
 
 There's no configuration required, but if you fancy specific theme style, you can set it
 by editing `/usr/share/sddm/themes/lavalamp-mhl/theme.conf` file as per instructions provided
 in that file.
+
+## Feedback
+
+The Lava Lamp MHL theme is available on the [KDE Store](https://store.kde.org/p/2307838). Please
+do comment and rate it if you like the theme. Your feedback is appreciated!
+
+Please do post your feature requests or issue reports
+to [GitHub Issues](https://github.com/MarcinOrlowski/sddm-lavalamp-mhl/issues) page of the project.
 
 ## License
 
