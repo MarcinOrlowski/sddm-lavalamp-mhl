@@ -46,6 +46,7 @@ Rectangle {
         readonly property string clockFont: "Arial"
         readonly property string uiFont: "Arial"
         readonly property real formOpacity: 0.85
+        readonly property bool debugAlwaysShowSessionSelector: true
     }
 
     // Visual themes (colors and rendering only)
@@ -208,6 +209,7 @@ Rectangle {
         readonly property string clockFont: simulationConfig.clockFont
         readonly property string uiFont: simulationConfig.uiFont
         readonly property real formOpacity: simulationConfig.formOpacity
+        readonly property bool debugAlwaysShowSessionSelector: simulationConfig.debugAlwaysShowSessionSelector
 
         // Visual properties (theme-specific)
         readonly property string iconColor: activeTheme.iconColor
@@ -678,7 +680,7 @@ Rectangle {
                     color: themeConfig.uiBackgroundColor
                     border.color: sessionMouseArea.containsMouse ? themeConfig.uiSecondaryColor : themeConfig.uiPrimaryColor
                     border.width: 2
-                    visible: sessionModel.count > 1
+                    visible: themeConfig.debugAlwaysShowSessionSelector || sessionModel.count > 1
 
                     property alias model: sessionListView.model
                     property alias index: sessionListView.currentIndex
