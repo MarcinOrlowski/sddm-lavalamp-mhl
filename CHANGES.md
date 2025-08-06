@@ -1,5 +1,9 @@
 # Changelog
 
+## v1.0.2 (TBD)
+- Made ComboBox component colors and fonts configurable with theme system
+- [DEV] Added debug option to always show session selector
+
 ## v1.0.1 (2025-08-06)
 - Code cleanup
 - Improved code docs
