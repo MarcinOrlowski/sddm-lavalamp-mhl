@@ -55,8 +55,7 @@ fi
 echo "Version read from metadata: $VERSION"
 
 # Directories
-PACKAGE_DIR="${BUILD_DIR}/${PKG_NAME}_${VERSION}_${ARCH}"
-THEME_INSTALL_DIR="${PACKAGE_DIR}/usr/share/sddm/themes/lavalamp-mhl"
+THEME_INSTALL_DIR="${BUILD_DIR}/lavalamp-mhl"
 
 echo "=== SDDM Lava Lamp MHL Theme - ZIP Package Builder ==="
 echo "Building package: ${PKG_NAME}_${VERSION}_${ARCH}.zip"
@@ -65,10 +64,11 @@ echo
 # Clean and create build directory
 echo "Preparing build directory..."
 rm -rf "$BUILD_DIR"
+mkdir -p "$THEME_INSTALL_DIR"
 
 # Copy theme files to package directory
 echo "Copying theme files..."
-cp -rv "$SOURCE_DIR"/* *.md "$THEME_INSTALL_DIR/"
+cp -r "$SOURCE_DIR"/* *.md "$THEME_INSTALL_DIR/"
 
 # Remove test scripts from package (not needed in installation)
 rm -f "$THEME_INSTALL_DIR"/test-*.sh
@@ -82,7 +82,8 @@ ZIP_DIR="${ROOT_DIR}"
 ZIP_FILE="${PKG_NAME}_${VERSION}_${ARCH}.zip"
 ZIP_FULL="${ZIP_DIR}/${ZIP_FILE}"
 
-echo "OK" > "${ZIP_FILE}"
+# Create ZIP archive
+zip -r "${ZIP_FILE}" "lavalamp-mhl"
 mv "$ZIP_FILE" "$ZIP_DIR/"
 
 echo
