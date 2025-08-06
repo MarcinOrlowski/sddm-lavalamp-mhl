@@ -37,14 +37,15 @@ Comes in multiple color themes to suit your liking.
 
 You can install Lava Lamp MHL theme in multiple ways:
 
-- using buiKDE store
+- using KDE store via KDE SDDM control panel
 - manually by downloading the ZIP archive
 - installing Debian/Ubuntu package (.deb)
 
 ### KDE Store
 
-To install the Lava Lamp MHL theme from KDE Store using KDE built-in UI,
-follow these steps:
+The KDE Store](https://store.kde.org/p/2307838) page.
+
+To install the Lava Lamp MHL theme from KDE Store use SDDM control panel built into KDE Plasma:
 
 - Go to `Settings -> System Settings`,
 - Search for `SDDM` and open `Login Screen (SDDM)` section,
@@ -55,7 +56,7 @@ follow these steps:
 ### Manual installation
 
 - Go to [Releases](https://github.com/MarcinOrlowski/sddm-lavalamp-mhl/releases) section
-- Choose release you need and download ZIP archive of it (`sddm-lavalamp-mhl-<VERSION>.zip`).
+- Choose release you need and download ZIP archive of it (`sddm-theme-lavalamp-mhl-<VERSION>.zip`).
 - Go to `Settings -> System Settings`,
 - Search for `SDDM` and open `Login Screen (SDDM)` section,
 - On the bottom, click `Install from file...` button,
@@ -77,9 +78,9 @@ For Debian and Ubuntu users, you can install the theme using a `.deb` package:
   sudo apt-get install -f
   ```
 - **Enable the theme:**
-  - Go to `Settings -> System Settings -> Login Screen (SDDM)`
-  - Select `Lava Lamp MHL` from the theme list
-  - Click `Apply`
+  - Go to `Settings -> System Settings -> Login Screen (SDDM)`,
+  - Select `Lava Lamp MHL` from the theme list,
+  - Click `Apply` button to apply the theme.
 
 **Note:** The package prevents accidental removal if the theme is currently active. To remove the
 package, first change to another theme, then run `sudo apt remove sddm-theme-lavalamp-mhl`.
@@ -100,7 +101,7 @@ to [GitHub Issues](https://github.com/MarcinOrlowski/sddm-lavalamp-mhl/issues) p
 
 ## License
 
-- Written and copyrighted ©2025 by Marcin Orlowski \<mail (#) MarcinOrlowski (.) com>
+- Written and copyrighted ©2025 by Marcin Orlowski <mail (#) MarcinOrlowski (.) com>
 - Lava Lamp MHL is open-source software licensed under
   the [MIT license](http://opensource.org/licenses/MIT)
 - SVG icons from: https://www.svgrepo.com/
