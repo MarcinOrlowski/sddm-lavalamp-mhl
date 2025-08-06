@@ -46,7 +46,7 @@ Rectangle {
         readonly property string clockFont: "Arial"
         readonly property string uiFont: "Arial"
         readonly property real formOpacity: 0.85
-        readonly property bool debugAlwaysShowSessionSelector: true
+        readonly property bool debugAlwaysShowSessionSelector: false
     }
 
     // Visual themes (colors and rendering only)
