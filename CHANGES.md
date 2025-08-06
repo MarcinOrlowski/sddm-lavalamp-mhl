@@ -1,7 +1,8 @@
 # Changelog
 
 ## @dev
-- Made ComboBox component colors and fonts configurable with theme system
+- Made ComboBox component colors and fonts configurable with theme system  
+- Made input box components configurable for custom themes
 - Replaced hardcoded "Arial" font with `themeConfig.uiFont`
 - [DEV] Added debug option to always show session selector
 
