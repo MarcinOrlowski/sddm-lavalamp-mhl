@@ -563,31 +563,47 @@ Rectangle {
                     font.family: themeConfig.uiFont
                 }
 
-                TextBox {
+                Rectangle {
                     id: name
                     width: parent.width
                     height: 45
-                    backgroundColor: themeConfig.uiBackgroundColor
-                    textColor: themeConfig.uiTextColor
-                    border.color: activeFocus ? themeConfig.uiSecondaryColor : themeConfig.uiPrimaryColor
+                    radius: 6
+                    color: themeConfig.uiBackgroundColor
+                    border.color: nameInput.activeFocus ? themeConfig.uiSecondaryColor : themeConfig.uiPrimaryColor
                     border.width: 2
-                    
-                    text: userModel.lastUser || ""
-                    font.pixelSize: 16
-                    font.family: "Arial"
 
-                    Keys.backtab: rebootButton
-                    Keys.tab: password
+                    property alias text: nameInput.text
 
-                    onFocusChanged: resetHideTimer()
-                    onTextChanged: recordActivity()
+                    function forceActiveFocus(reason) {
+                        nameInput.forceActiveFocus(reason)
+                    }
 
-                    Keys.onPressed: function(event) {
-                        if (event.key === Qt.Key_Return || event.key === Qt.Key_Enter) {
-                            sddm.login(name.text, password.text, sessionIndex)
-                            event.accepted = true
-                        } else {
-                            recordActivity()
+                    TextInput {
+                        id: nameInput
+                        anchors.fill: parent
+                        anchors.margins: 8
+
+                        text: userModel.lastUser || ""
+                        color: themeConfig.uiTextColor
+                        font.pixelSize: 16
+                        font.family: "Arial"
+                        selectByMouse: true
+                        verticalAlignment: TextInput.AlignVCenter
+
+                        KeyNavigation.backtab: rebootButton
+                        KeyNavigation.tab: password
+
+                        onActiveFocusChanged: resetHideTimer()
+                        onTextChanged: recordActivity()
+
+                        Keys.onPressed: function(event) {
+                            if (event.key === Qt.Key_Return || event.key === Qt.Key_Enter) {
+                                sddm.login(name.text, password.text, sessionIndex)
+                                event.accepted = true
+                            } else {
+                                // Record activity on any keystroke
+                                recordActivity()
+                            }
                         }
                     }
                 }
@@ -605,30 +621,47 @@ Rectangle {
                     font.family: themeConfig.uiFont
                 }
 
-                PasswordBox {
+                Rectangle {
                     id: password
                     width: parent.width
                     height: 45
-                    backgroundColor: themeConfig.uiBackgroundColor
-                    textColor: themeConfig.uiTextColor
-                    border.color: activeFocus ? themeConfig.uiSecondaryColor : themeConfig.uiPrimaryColor
+                    radius: 6
+                    color: themeConfig.uiBackgroundColor
+                    border.color: passwordInput.activeFocus ? themeConfig.uiSecondaryColor : themeConfig.uiPrimaryColor
                     border.width: 2
-                    
-                    font.pixelSize: 16
-                    font.family: "Arial"
 
-                    KeyNavigation.backtab: name
-                    KeyNavigation.tab: session
+                    property alias text: passwordInput.text
 
-                    onFocusChanged: resetHideTimer()
-                    onTextChanged: recordActivity()
+                    function forceActiveFocus(reason) {
+                        passwordInput.forceActiveFocus(reason)
+                    }
 
-                    Keys.onPressed: function(event) {
-                        if (event.key === Qt.Key_Return || event.key === Qt.Key_Enter) {
-                            sddm.login(name.text, password.text, sessionIndex)
-                            event.accepted = true
-                        } else {
-                            recordActivity()
+                    TextInput {
+                        id: passwordInput
+                        anchors.fill: parent
+                        anchors.margins: 8
+
+                        color: themeConfig.uiTextColor
+                        font.pixelSize: 16
+                        font.family: "Arial"
+                        selectByMouse: true
+                        echoMode: TextInput.Password
+                        verticalAlignment: TextInput.AlignVCenter
+
+                        KeyNavigation.backtab: name
+                        KeyNavigation.tab: session
+
+                        onActiveFocusChanged: resetHideTimer()
+                        onTextChanged: recordActivity()
+
+                        Keys.onPressed: function(event) {
+                            if (event.key === Qt.Key_Return || event.key === Qt.Key_Enter) {
+                                sddm.login(name.text, password.text, sessionIndex)
+                                event.accepted = true
+                            } else {
+                                // Record activity on any keystroke
+                                recordActivity()
+                            }
                         }
                     }
                 }
