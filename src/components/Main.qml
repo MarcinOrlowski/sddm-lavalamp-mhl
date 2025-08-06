@@ -2,8 +2,7 @@ import QtQuick 2.15
 import SddmComponents 2.0
 import QtQuick.VirtualKeyboard 2.4
 import QtGraphicalEffects 1.15
-import "components"
-import "shaders"
+import "../shaders"
 
 /**
  * Lava Lamp MHL: SDDM dynamic login theme
@@ -906,7 +905,7 @@ Rectangle {
                 anchors.centerIn: parent
                 width: 40
                 height: 40
-                source: "assets/suspend.svgz"
+                source: "../assets/suspend.svgz"
                 smooth: true
                 visible: false
             }
@@ -956,7 +955,7 @@ Rectangle {
                 anchors.centerIn: parent
                 width: 40
                 height: 40
-                source: "assets/hibernate.svgz"
+                source: "../assets/hibernate.svgz"
                 smooth: true
                 visible: false
             }
@@ -1006,7 +1005,7 @@ Rectangle {
                 anchors.centerIn: parent
                 width: 40
                 height: 40
-                source: "assets/shutdown.svgz"
+                source: "../assets/shutdown.svgz"
                 smooth: true
                 visible: false
             }
@@ -1056,7 +1055,7 @@ Rectangle {
                 anchors.centerIn: parent
                 width: 40
                 height: 40
-                source: "assets/reboot.svgz"
+                source: "../assets/reboot.svgz"
                 smooth: true
                 visible: false
             }
@@ -1116,7 +1115,7 @@ Rectangle {
             anchors.centerIn: parent
             width: 40
             height: 40
-            source: "assets/random.svgz"
+            source: "../assets/random.svgz"
             smooth: true
             visible: false
         }
@@ -1224,7 +1223,7 @@ Rectangle {
                     anchors.centerIn: parent
                     width: 32
                     height: 32
-                    source: "assets/cat.svgz"
+                    source: "../assets/cat.svgz"
                     smooth: true
                     visible: false
                 }
