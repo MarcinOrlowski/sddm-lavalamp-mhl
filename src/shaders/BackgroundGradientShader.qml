@@ -18,33 +18,28 @@ QtObject {
         uniform highp vec3 gradientColor2;
         uniform highp vec3 gradientColor3;
         uniform highp vec3 gradientColor4;
+        uniform highp int gradientMode;
         varying highp vec2 qt_TexCoord0;
 
-        // Calculate gradient color based on position and gradient type
+        // Calculate gradient color based on position and gradient mode
+        // gradientMode: 0=vertical, 1=four_corner, 2=rainbow
         vec3 calculateGradientColor(float x, float y) {
             float u = x / resolution.x;  // 0.0 to 1.0 horizontal
             float v = y / resolution.y;  // 0.0 to 1.0 vertical
 
-            // Determine gradient type based on color differences
-
-            // Check if colors 1 and 2 are different (vertical gradient indicator)
-            float verticalDiff = distance(gradientColor1, gradientColor2);
-            // Check if colors 1 and 3 are different (4-corner gradient indicator)
-            float cornerDiff = distance(gradientColor1, gradientColor3);
-
-            if (verticalDiff > 0.1 && cornerDiff < 0.1) {
-                // Pure vertical gradient: only Y changes, X stays constant
+            if (gradientMode == 0) {
+                // VERTICAL: Pure vertical gradient
                 // color1 = top, color2 = bottom
                 return mix(gradientColor1, gradientColor2, v);
             }
-            else if (cornerDiff > 0.1 && distance(gradientColor2, gradientColor4) > 0.1) {
-                // 4-corner gradient: all four corners different
+            else if (gradientMode == 1) {
+                // FOUR_CORNER: 4-corner gradient
                 vec3 topColor = mix(gradientColor1, gradientColor2, u);     // top-left to top-right
                 vec3 bottomColor = mix(gradientColor3, gradientColor4, u);  // bottom-left to bottom-right
                 return mix(topColor, bottomColor, v);                       // top to bottom
             }
             else {
-                // Default: rainbow gradient
+                // RAINBOW: Default rainbow gradient
                 return vec3(u, v, 1.0) * baseColor;
             }
         }
