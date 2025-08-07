@@ -86,13 +86,13 @@ Rectangle {
         }
 
         readonly property QtObject ocean: QtObject {
-            readonly property string gradientType: "vertical"
+            readonly property string gradientType: "corners"
             readonly property string gradientColor1: "#0080FF"
             readonly property string gradientColor2: "#004080"
             readonly property string gradientColor3: "#00FFFF"
             readonly property string gradientColor4: "#0080FF"
             readonly property bool backgroundGradientEnabled: true
-            readonly property string backgroundGradientType: "vertical"
+            readonly property string backgroundGradientType: "corners"
             readonly property string backgroundColor1: "#0a1a2a"
             readonly property string backgroundColor2: "#051020"
             readonly property string backgroundColor3: "#0a1a2a"
@@ -120,13 +120,13 @@ Rectangle {
         }
 
         readonly property QtObject forest: QtObject {
-            readonly property string gradientType: "vertical"
+            readonly property string gradientType: "corners"
             readonly property string gradientColor1: "#80FF80"
             readonly property string gradientColor2: "#006600"
             readonly property string gradientColor3: "#CCFF80"
             readonly property string gradientColor4: "#408040"
             readonly property bool backgroundGradientEnabled: true
-            readonly property string backgroundGradientType: "vertical"
+            readonly property string backgroundGradientType: "corners"
             readonly property string backgroundColor1: "#1a2a1a"
             readonly property string backgroundColor2: "#0f1f0f"
             readonly property string backgroundColor3: "#1a2a1a"
@@ -183,6 +183,21 @@ Rectangle {
         var nextIndex = (currentIndex + 1) % availableThemes.length
         currentTheme = availableThemes[nextIndex]
         console.log("Theme changed to:", currentTheme)
+    }
+
+    // Gradient mode constants  
+    readonly property int gradientModeVertical: 0
+    readonly property int gradientModeCorners: 1
+    readonly property int gradientModeRainbow: 2
+
+    // Gradient mode mapping function
+    function getGradientMode(gradientType) {
+        switch(gradientType) {
+            case "vertical": return gradientModeVertical
+            case "corners": return gradientModeCorners  
+            case "rainbow": return gradientModeRainbow
+            default: return gradientModeRainbow    // fallback to rainbow
+        }
     }
 
     // Centralized configuration combining simulation and visual theme
@@ -270,6 +285,15 @@ Rectangle {
         readonly property var uiSecondaryColorRgb: hexToRgb(uiSecondaryColor)
         readonly property var uiTextColorRgb: hexToRgb(uiTextColor)
         readonly property var uiBackgroundColorRgb: hexToRgb(uiBackgroundColor)
+
+        // Gradient mode values for shaders
+        readonly property int gradientModeValue: getGradientMode(activeTheme.gradientType)
+        readonly property int backgroundGradientModeValue: getGradientMode(activeTheme.backgroundGradientType)
+
+        // Debug gradient modes
+        Component.onCompleted: {
+            console.log("Theme:", currentTheme, "gradientType:", activeTheme.gradientType, "→ mode:", gradientModeValue)
+        }
     }
 
     // Dynamic screen dimensions - uses primary screen geometry with fallback
@@ -429,6 +453,7 @@ Rectangle {
         property vector3d gradientColor2: Qt.vector3d(themeConfig.backgroundColor2Rgb.r, themeConfig.backgroundColor2Rgb.g, themeConfig.backgroundColor2Rgb.b)
         property vector3d gradientColor3: Qt.vector3d(themeConfig.backgroundColor3Rgb.r, themeConfig.backgroundColor3Rgb.g, themeConfig.backgroundColor3Rgb.b)
         property vector3d gradientColor4: Qt.vector3d(themeConfig.backgroundColor4Rgb.r, themeConfig.backgroundColor4Rgb.g, themeConfig.backgroundColor4Rgb.b)
+        property int gradientMode: themeConfig.backgroundGradientModeValue
 
         vertexShader: vertexShaderSource.source
         fragmentShader: backgroundShaderSource.source
@@ -454,6 +479,7 @@ Rectangle {
         property vector3d gradientColor2: Qt.vector3d(themeConfig.gradientColor2Rgb.r, themeConfig.gradientColor2Rgb.g, themeConfig.gradientColor2Rgb.b)
         property vector3d gradientColor3: Qt.vector3d(themeConfig.gradientColor3Rgb.r, themeConfig.gradientColor3Rgb.g, themeConfig.gradientColor3Rgb.b)
         property vector3d gradientColor4: Qt.vector3d(themeConfig.gradientColor4Rgb.r, themeConfig.gradientColor4Rgb.g, themeConfig.gradientColor4Rgb.b)
+        property int gradientMode: themeConfig.gradientModeValue
         property real verticalBias: themeConfig.verticalBias
         property real horizontalScale: themeConfig.horizontalScale
         property bool backgroundGradientEnabled: themeConfig.backgroundGradientEnabled
