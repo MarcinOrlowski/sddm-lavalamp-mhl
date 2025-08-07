@@ -786,6 +786,7 @@ Rectangle {
 
                 CustomButton {
                     id: loginButton
+                    themeConfig: container.themeConfig
                     text: textConstants.login || "Login"
                     width: 120
                     height: 40
@@ -830,6 +831,7 @@ Rectangle {
 
         CustomButton {
             id: suspendButton
+            themeConfig: container.themeConfig
             text: textConstants.suspend || "Sleep"
             width: 80
             height: 35
@@ -842,6 +844,7 @@ Rectangle {
 
         CustomButton {
             id: hibernateButton
+            themeConfig: container.themeConfig
             text: textConstants.hibernate || "Hibernate"
             width: 90
             height: 35
@@ -854,6 +857,7 @@ Rectangle {
 
         CustomButton {
             id: shutdownButton
+            themeConfig: container.themeConfig
             text: textConstants.shutdown || "Shutdown"
             width: 100
             height: 35
@@ -866,6 +870,7 @@ Rectangle {
 
         CustomButton {
             id: rebootButton
+            themeConfig: container.themeConfig
             text: textConstants.reboot || "Reboot"
             width: 80
             height: 35

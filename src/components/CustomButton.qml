@@ -12,11 +12,12 @@ import QtQuick 2.15
 Rectangle {
     id: button
 
+    property QtObject themeConfig
     property alias text: buttonText.text
     property alias font: buttonText.font
-    property string primaryColor: "#8B4513"
-    property string secondaryColor: "#FF6B35"
-    property string textColor: "#FFE4CC"
+    property string primaryColor: themeConfig.uiPrimaryColor
+    property string secondaryColor: themeConfig.uiSecondaryColor
+    property string textColor: themeConfig.uiTextColor
     signal clicked
 
     width: 100
@@ -69,7 +70,7 @@ Rectangle {
         anchors.centerIn: parent
         color: button.hovered ? Qt.lighter(textColor, 1.2) : textColor
         font.pixelSize: 14
-        font.family: "Arial"
+        font.family: themeConfig.uiFont
     }
 
     // Focus indicator
