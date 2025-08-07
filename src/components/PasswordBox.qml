@@ -21,13 +21,14 @@ Rectangle {
     property alias selectByMouse: textInput.selectByMouse
     property string placeholderText: "Password"
 
-    // Override color to control text color, not background
-    property alias textColor: textInput.color
+    // Configurable colors
+    property color backgroundColor: "#F0F0F0"
+    property color textColor: "#000000"
 
     width: 200
     height: 35
     radius: 6
-    color: "#00FF00"  // Bright green background
+    color: backgroundColor
     border.color: textInput.activeFocus ? "#5A7ABA" : "#3A4A6A"
     border.width: 2
 
@@ -36,7 +37,7 @@ Rectangle {
         anchors.fill: parent
         anchors.margins: 8
 
-        color: "#000000"  // Black text
+        color: textColor
         font.pixelSize: 14
         font.family: "Arial"
         selectByMouse: true
