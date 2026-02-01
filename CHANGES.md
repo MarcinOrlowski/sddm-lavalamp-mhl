@@ -5,6 +5,7 @@
 - Made login and power buttons adapt to active theme colors
 - Replaced hardcoded "Arial" font with `themeConfig.uiFont`
 - Improved gradient rendering performance and reliability
+- Added new project's artork and logo
 - [DEV] Added debug option to always show session selector
 - [DEV] Replaced gradient inference with explicit gradient mode system
 
