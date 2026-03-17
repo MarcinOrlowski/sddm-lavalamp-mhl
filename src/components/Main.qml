@@ -35,7 +35,7 @@ Rectangle {
         return x - Math.floor(x);
     }
 
-    function computeMetaballPositions(time, randomSeed, count, resW, resH, minSize, maxSize, minSpeed, maxSpeed, vBias, hScale) {
+    function computeMetaballPositions(time, randomSeed, count, resW, resH, minSize, maxSize, speedBuckets, speedMultiplier, vBias, hScale) {
         var positions = [];
         for (var i = 0; i < count; i++) {
             var seed = (i + randomSeed) * 12.9898;
@@ -47,7 +47,20 @@ Rectangle {
             var randomSpd = fract(Math.sin(seed * 2.236) * 43758.5453);
 
             var radius = randomR * (maxSize - minSize) + minSize;
-            var speed = randomSpd * (maxSpeed - minSpeed) + minSpeed;
+
+            // Speed buckets: derive speed range from orb size
+            var sizeNorm = (maxSize > minSize) ? (radius - minSize) / (maxSize - minSize) : 0.5;
+            var bucketMinSpeed = speedBuckets[speedBuckets.length - 1].minSpeed;
+            var bucketMaxSpeed = speedBuckets[speedBuckets.length - 1].maxSpeed;
+            for (var b = 0; b < speedBuckets.length; b++) {
+                if (sizeNorm <= speedBuckets[b].maxSize) {
+                    bucketMinSpeed = speedBuckets[b].minSpeed;
+                    bucketMaxSpeed = speedBuckets[b].maxSpeed;
+                    break;
+                }
+            }
+            // Convert to internal scale (same as themeConfig division by 100), apply global multiplier
+            var speed = (randomSpd * (bucketMaxSpeed - bucketMinSpeed) + bucketMinSpeed) / 100.0 * speedMultiplier;
             var dirX = (randomVX - 0.5) * 2.0;
             var dirY = (randomVY - 0.5) * 2.0;
             if (Math.abs(dirX) < 0.3) dirX = (dirX >= 0 ? 0.3 : -0.3);
@@ -142,6 +155,14 @@ Rectangle {
         readonly property real metaballMaxSize: 0.07
         readonly property real metaballMinSpeed: 50
         readonly property real metaballMaxSpeed: 83
+        readonly property real speedMultiplier: 1.0  // Global speed multiplier for all orbs
+        // Speed buckets: smaller orbs move faster, larger orbs move slower
+        // maxSize = normalized size threshold (0-1), speeds in same scale as metaballMinSpeed/metaballMaxSpeed
+        readonly property var speedBuckets: [
+            { maxSize: 0.33, minSpeed: 70, maxSpeed: 100 },  // Small orbs: fast
+            { maxSize: 0.66, minSpeed: 45, maxSpeed: 75 },   // Medium orbs: medium
+            { maxSize: 1.00, minSpeed: 25, maxSpeed: 50 }    // Large orbs: slow
+        ]
         readonly property real metaballThreshold: 0.99
         readonly property real metaballBaseColorR: 1.0
         readonly property real metaballBaseColorG: 1.0
@@ -854,7 +875,7 @@ Rectangle {
                 time, container.metaballRandomSeed, themeConfig.metaballCount,
                 container.width, container.height,
                 minSizePx, maxSizePx,
-                themeConfig.metaballMinSpeed, themeConfig.metaballMaxSpeed,
+                simulationConfig.speedBuckets, simulationConfig.speedMultiplier,
                 themeConfig.verticalBias, themeConfig.horizontalScale
             );
             var matrices = packMetaballsToMatrices(positions, container.metaballMatCount);
