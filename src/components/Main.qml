@@ -48,8 +48,12 @@ Rectangle {
 
             var radius = randomR * (maxSize - minSize) + minSize;
             var speed = randomSpd * (maxSpeed - minSpeed) + minSpeed;
-            var vx = (randomVX - 0.5) * 2.0 * speed * hScale;
-            var vy = (randomVY - 0.5) * 2.0 * speed * vBias;
+            var dirX = (randomVX - 0.5) * 2.0;
+            var dirY = (randomVY - 0.5) * 2.0;
+            if (Math.abs(dirX) < 0.3) dirX = (dirX >= 0 ? 0.3 : -0.3);
+            if (Math.abs(dirY) < 0.3) dirY = (dirY >= 0 ? 0.3 : -0.3);
+            var vx = dirX * speed * hScale;
+            var vy = dirY * speed * vBias;
 
             var startX = randomX * (resW - 2.0 * radius) + radius;
             var startY = randomY * (resH - 2.0 * radius) + radius;
@@ -124,7 +128,7 @@ Rectangle {
         readonly property int metaballCount: 35
         readonly property real metaballMinSize: 0.02
         readonly property real metaballMaxSize: 0.07
-        readonly property real metaballMinSpeed: 32
+        readonly property real metaballMinSpeed: 50
         readonly property real metaballMaxSpeed: 83
         readonly property real metaballThreshold: 0.99
         readonly property real metaballBaseColorR: 1.0
