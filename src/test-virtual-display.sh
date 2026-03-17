@@ -30,8 +30,12 @@ if ! command -v Xephyr &> /dev/null; then
     exit 1
 fi
 
-# Check if sddm-greeter is available
-if ! command -v sddm-greeter &> /dev/null; then
+# Detect SDDM greeter binary (Qt 6 renamed it to sddm-greeter-qt6)
+if command -v sddm-greeter-qt6 &> /dev/null; then
+    GREETER_BIN="sddm-greeter-qt6"
+elif command -v sddm-greeter &> /dev/null; then
+    GREETER_BIN="sddm-greeter"
+else
     echo "Error: sddm-greeter not found. Please install SDDM."
     exit 1
 fi
@@ -72,7 +76,7 @@ echo "Close the window or press Ctrl+C to exit."
 echo ""
 
 # Run SDDM greeter in the virtual display
-DISPLAY=:$DISPLAY_NUM sddm-greeter --test-mode --theme "$THEME_DIR" &
+DISPLAY=:$DISPLAY_NUM ${GREETER_BIN} --test-mode --theme "$THEME_DIR" &
 GREETER_PID=$!
 
 # Wait for either process to exit

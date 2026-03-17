@@ -6,6 +6,7 @@
 - [Installation](#installation)
 - [Configuration](#configuration)
 - [License](#license)
+- [Development](docs/dev.md)
 - [Changelog](CHANGES.md)
 
 ______________________________________________________________________

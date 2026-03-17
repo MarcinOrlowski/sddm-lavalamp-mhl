@@ -1,8 +1,7 @@
-import QtQuick 2.15
-import SddmComponents 2.0
-import QtQuick.VirtualKeyboard 2.4
-import QtGraphicalEffects 1.15
-import "../shaders"
+import QtQuick
+import SddmComponents
+import QtQuick.VirtualKeyboard
+import Qt5Compat.GraphicalEffects
 
 /**
  * Lava Lamp MHL: SDDM dynamic login theme
@@ -113,23 +112,6 @@ Rectangle {
             ));
         }
         return matrices;
-    }
-
-    function generateMetaballUniforms(matCount) {
-        var lines = [];
-        for (var i = 0; i < matCount; i++) {
-            lines.push("uniform highp mat4 metaballData" + i + ";");
-        }
-        return lines.join("\n        ");
-    }
-
-    function generateMetaballLookup(matCount) {
-        var lines = [];
-        for (var i = 0; i < matCount; i++) {
-            var prefix = (i === 0) ? "if" : "else if";
-            lines.push(prefix + " (matIdx == " + i + ") col = metaballData" + i + "[colIdx];");
-        }
-        return lines.join("\n            ");
     }
 
     TextConstants { id: textConstants }
@@ -470,18 +452,11 @@ Rectangle {
         nextControl.forceActiveFocus(Qt.TabFocusReason)
     }
 
-    // Shader components
-    MetaballsVertexShader {
-        id: vertexShaderSource
-    }
-
-    MetaballsFragmentShader {
-        id: fragmentShaderSource
-    }
-
-    BackgroundGradientShader {
-        id: backgroundShaderSource
-    }
+    // Shader file paths (pre-compiled .qsb for Qt 6)
+    readonly property string vertexShaderPath: Qt.resolvedUrl("../shaders/metaballs.vert.qsb")
+    readonly property string metaballsShaderPath: Qt.resolvedUrl("../shaders/metaballs.frag.qsb")
+    readonly property string backgroundShaderPath: Qt.resolvedUrl("../shaders/background.frag.qsb")
+    readonly property string backgroundVertexShaderPath: Qt.resolvedUrl("../shaders/background.vert.qsb")
 
     function resetHideTimer() {
         if (themeConfig.uiAutoHide) {
@@ -566,8 +541,8 @@ Rectangle {
         property vector3d gradientColor4: Qt.vector3d(themeConfig.backgroundColor4Rgb.r, themeConfig.backgroundColor4Rgb.g, themeConfig.backgroundColor4Rgb.b)
         property int gradientMode: themeConfig.backgroundGradientModeValue
 
-        vertexShader: vertexShaderSource.source
-        fragmentShader: backgroundShaderSource.source
+        vertexShader: backgroundVertexShaderPath
+        fragmentShader: backgroundShaderPath
     }
 
     // Metaballs background effect
@@ -584,12 +559,12 @@ Rectangle {
         property vector3d gradientColor3: Qt.vector3d(themeConfig.gradientColor3Rgb.r, themeConfig.gradientColor3Rgb.g, themeConfig.gradientColor3Rgb.b)
         property vector3d gradientColor4: Qt.vector3d(themeConfig.gradientColor4Rgb.r, themeConfig.gradientColor4Rgb.g, themeConfig.gradientColor4Rgb.b)
         property int gradientMode: themeConfig.gradientModeValue
-        property bool backgroundGradientEnabled: themeConfig.backgroundGradientEnabled
+        property int backgroundGradientEnabled: themeConfig.backgroundGradientEnabled ? 1 : 0
         property vector3d backgroundGradientColor1: Qt.vector3d(themeConfig.backgroundColor1Rgb.r, themeConfig.backgroundColor1Rgb.g, themeConfig.backgroundColor1Rgb.b)
         property vector3d backgroundGradientColor2: Qt.vector3d(themeConfig.backgroundColor2Rgb.r, themeConfig.backgroundColor2Rgb.g, themeConfig.backgroundColor2Rgb.b)
         property vector3d backgroundGradientColor3: Qt.vector3d(themeConfig.backgroundColor3Rgb.r, themeConfig.backgroundColor3Rgb.g, themeConfig.backgroundColor3Rgb.b)
         property vector3d backgroundGradientColor4: Qt.vector3d(themeConfig.backgroundColor4Rgb.r, themeConfig.backgroundColor4Rgb.g, themeConfig.backgroundColor4Rgb.b)
-        property bool glowEffectEnabled: themeConfig.glowEffectEnabled
+        property int glowEffectEnabled: themeConfig.glowEffectEnabled ? 1 : 0
         property real glowIntensity: themeConfig.glowIntensity
         property real glowInnerThreshold: themeConfig.glowInnerThreshold
         property real glowMidThreshold: themeConfig.glowMidThreshold
@@ -629,15 +604,8 @@ Rectangle {
             if (matrices.length > 8) metaballData8 = matrices[8];
         }
 
-        vertexShader: vertexShaderSource.source
-
-        fragmentShader: {
-            var shader = fragmentShaderSource.source;
-            shader = shader.replace("{{MAX_METABALLS}}", themeConfig.metaballCount.toString());
-            shader = shader.replace("{{METABALL_UNIFORMS}}", generateMetaballUniforms(container.metaballMatCount));
-            shader = shader.replace("{{METABALL_LOOKUP}}", generateMetaballLookup(container.metaballMatCount));
-            return shader;
-        }
+        vertexShader: vertexShaderPath
+        fragmentShader: metaballsShaderPath
 
         // Use SequentialAnimation with very large duration to avoid resets
         SequentialAnimation on time {
