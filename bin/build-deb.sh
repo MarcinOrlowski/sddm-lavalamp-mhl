@@ -80,6 +80,11 @@ if [ -z "$VERSION" ]; then
 fi
 
 echo "Version read from metadata: $VERSION"
+
+# Inject version into theme.conf so QML can read it at runtime
+THEME_CONF="${ROOT_DIR}/src/theme.conf"
+sed -i "s/^version=.*/version=${VERSION}/" "${THEME_CONF}"
+
 MAINTAINER="Marcin Orlowski <mail@marcinorlowski.com>"
 DESCRIPTION="Lava Lamp animated SDDM login theme"
 HOMEPAGE="https://github.com/MarcinOrlowski/sddm-lavalamp-mhl"
