@@ -1,0 +1,114 @@
+##################################################################################
+#
+# Post-Merge PR Cleanup and Validation
+#
+# Author: Marcin Orlowski <mail (#) marcinOrlowski (.) com>
+#
+##################################################################################
+#
+# This workflow runs after a PR is merged to perform cleanup and validation:
+# 1. Locks the PR conversation.
+#
+##################################################################################
+
+name: "Post-Merge Cleanup"
+
+on:
+  pull_request:
+    types: [closed]
+
+permissions:
+  contents: read
+  pull-requests: write
+  issues: write
+
+jobs:
+  cleanup_and_validate:
+    name: "Cleanup and validate merged PR"
+    runs-on: ubuntu-latest
+    # Only run when PR is actually merged (not just closed)
+    if: github.event.pull_request.merged == true
+
+    steps:
+      - name: "Lock PR conversation"
+        if: always()
+        uses: actions/github-script@v6
+        with:
+          script: |
+            const pr = context.payload.pull_request;
+
+            try {
+              console.log(`Locking PR #${pr.number} conversation…`);
+              await github.rest.issues.lock({
+                owner: context.repo.owner,
+                repo: context.repo.repo,
+                issue_number: pr.number,
+                lock_reason: 'resolved'
+              });
+              console.log('PR conversation locked successfully');
+            } catch (error) {
+              console.error(`Error locking PR: ${error.message}`);
+              // Don't fail the workflow if locking fails
+            }
+
+      - name: "Lock referenced issues"
+        if: always()
+        uses: actions/github-script@v6
+        with:
+          script: |
+            const pr = context.payload.pull_request;
+            const prBody = pr.body || '';
+
+            console.log('Searching for issue references in PR body…');
+
+            // Regex pattern for GitHub auto-close keywords
+            // Matches: Closes #123, Fixes #456, Resolves #789 (and variations)
+            const issuePattern = /(?:close[sd]?|fix(?:e[sd])?|resolve[sd]?)\s+#(\d+)/gi;
+
+            // Extract all matches
+            const matches = [...prBody.matchAll(issuePattern)];
+
+            if (matches.length === 0) {
+              console.log('No issue references found in PR body');
+              return;
+            }
+
+            console.log(`Found ${matches.length} issue reference(s)`);
+
+            // Lock each referenced issue
+            for (const match of matches) {
+              const issueNumber = parseInt(match[1]);
+              console.log(`Processing issue #${issueNumber}…`);
+
+              try {
+                // Check if issue exists and is closed (GitHub auto-closes on merge)
+                const { data: issue } = await github.rest.issues.get({
+                  owner: context.repo.owner,
+                  repo: context.repo.repo,
+                  issue_number: issueNumber
+                });
+
+                if (issue.state !== 'closed') {
+                  console.log(`Issue #${issueNumber} is not closed, skipping lock`);
+                  continue;
+                }
+
+                if (issue.locked) {
+                  console.log(`Issue #${issueNumber} is already locked`);
+                  continue;
+                }
+
+                // Lock the issue
+                await github.rest.issues.lock({
+                  owner: context.repo.owner,
+                  repo: context.repo.repo,
+                  issue_number: issueNumber,
+                  lock_reason: 'resolved'
+                });
+                console.log(`Issue #${issueNumber} locked successfully`);
+
+              } catch (error) {
+                console.error(`Error processing issue #${issueNumber}: ${error.message}`);
+                // Continue with other issues even if one fails
+              }
+            }
