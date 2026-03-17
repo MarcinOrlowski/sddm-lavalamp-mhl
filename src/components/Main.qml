@@ -281,10 +281,10 @@ Rectangle {
             readonly property string inputLabelColor: "#C080E0"
             readonly property string copyrightTextColor: "#C0A0D0"
             readonly property bool glowEffectEnabled: true
-            readonly property real glowIntensity: 2.5
+            readonly property real glowIntensity: 5.5
             readonly property real glowInnerThreshold: 0.7
-            readonly property real glowMidThreshold: 0.35
-            readonly property real glowOuterThreshold: 0.08
+            readonly property real glowMidThreshold: 0.3
+            readonly property real glowOuterThreshold: 0.05
             readonly property real glowMinFieldStrength: 0.008
         }
 
