@@ -4,10 +4,10 @@
 
 - [Lava Lamp animated SDDM theme](#lava-lamp-animated-sddm-theme)
   - [What is it?](#what-is-it)
-    - [Themes](#themes)
-      - [Heat](#heat)
-      - [Ocean](#ocean)
-      - [Forest](#forest)
+  - [Themes](#themes)
+    - [Heat](#heat)
+    - [Ocean](#ocean)
+    - [Forest](#forest)
   - [Configuration](#configuration)
   - [Feedback](#feedback)
   - [License](#license)
@@ -21,19 +21,19 @@ classic [lava lamp](https://wikipedia.org/wiki/Lava_lamp). It features a mesmeri
 colorful blobs that move and change shape, creating a relaxing and soothing visual effect. The theme
 is designed to be visually appealing and to provide a unique and engaging user experience.
 
-### Themes
+## Themes
 
 Comes in multiple color themes to suit your liking.
 
-#### Heat
+### Heat
 
 ![Lava Lamp MHL Style Heat](img/preview-heat.webp)
 
-#### Ocean
+### Ocean
 
 ![Lava Lamp MHL Style Ocean](img/preview-ocean.webp)
 
-#### Forest
+### Forest
 
 ![Lava Lamp MHL Style Forest](img/preview-forest.webp)
 
