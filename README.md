@@ -1,4 +1,4 @@
-![Lava Lamp MHL Logo](img/logo.wepb)
+![Lava Lamp MHL Logo](img/logo.webp)
 
 # Lava Lamp animated SDDM theme
 
