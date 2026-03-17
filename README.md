@@ -5,11 +5,10 @@
 - [Lava Lamp animated SDDM theme](#lava-lamp-animated-sddm-theme)
   - [What is it?](#what-is-it)
   - [Themes](#themes)
-    - [Heat](#heat)
-    - [Ocean](#ocean)
-    - [Forest](#forest)
+  - [Installation](docs/README.md)
   - [Configuration](#configuration)
   - [Feedback](#feedback)
+  - [Developers](docs/dev.md)
   - [License](#license)
 
 ______________________________________________________________________
