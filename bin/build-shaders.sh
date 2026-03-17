@@ -39,7 +39,7 @@ for vert in "${SHADER_DIR}"/*.vert; do
     [ -f "${vert}" ] || continue
     out="${vert}.qsb"
     echo "Compiling $(basename "${vert}")…"
-    if ${QSB} --qt6 -b -o "${out}" "${vert}"; then
+    if ${QSB} -b -o "${out}" "${vert}"; then
         echo "  -> $(basename "${out}")"
     else
         echo "  FAILED: $(basename "${vert}")"
@@ -52,7 +52,7 @@ for frag in "${SHADER_DIR}"/*.frag; do
     [ -f "${frag}" ] || continue
     out="${frag}.qsb"
     echo "Compiling $(basename "${frag}")…"
-    if ${QSB} --qt6 -o "${out}" "${frag}"; then
+    if ${QSB} -o "${out}" "${frag}"; then
         echo "  -> $(basename "${out}")"
     else
         echo "  FAILED: $(basename "${frag}")"

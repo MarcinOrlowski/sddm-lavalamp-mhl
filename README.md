@@ -13,7 +13,7 @@ See [Installation](docs/README.md) document for theme installation guides.
 
 Comes in multiple color themes to suit your liking: Arctic, Citrus, [Crimson](img/preview-crimson.webp),
 [Forest](img/preview-forest.webp), [Heat](img/preview-heat.webp), Neon, [Ocean](img/preview-ocean.webp)
-and Sunset. You can always change the visible theme at runtime by using "dice" icon located in 
+and Sunset. You can always change the visible theme at runtime by using "dice" icon located in
 upper-left corner of your screen.
 
 ![Themes](img/themes.webp)
