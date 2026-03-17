@@ -63,11 +63,11 @@ jobs:
 
             if (!branchPattern.test(branchName)) {
               let errorMessage = '❌ Source branch name validation failed\n\n';
-              errorMessage += '**Issue**: Invalid branch name format\n';
-              errorMessage += '```\n';
+              errorMessage += '**Issue**: Invalid branch name format\n\n';
               errorMessage += '**Required Format**:\n';
-              errorMessage += '<ticket_id>-<description>\n';
               errorMessage += '```\n';
+              errorMessage += '<ticket_id>-<description>\n';
+              errorMessage += '```\n\n';
               errorMessage += `**Pattern**: \`${branchPattern}\`\n\n`;
               errorMessage += `**Your branch**: \`${branchName}\``;
 

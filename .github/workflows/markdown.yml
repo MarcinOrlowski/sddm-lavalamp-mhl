@@ -49,7 +49,6 @@ jobs:
         run: |
           found="NO"
           [[ ${{ steps.filter.outputs.src }} == 'true' ]] && found="YES"
-          echo "run_action=${found}" >> $GITHUB_OUTPUT
           echo -e "\n****************************************\n"
           echo "${found}"
           echo -e "****************************************"

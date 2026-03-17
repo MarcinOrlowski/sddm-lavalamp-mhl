@@ -51,7 +51,9 @@ jobs:
             console.log(`Target branch ${targetBranch} was updated`);
             console.log(`Commit: ${context.sha}`);
 
-            // List all open PRs targeting the updated branch
+            // List open PRs targeting the updated branch.
+            // NOTE: This returns only the first page (~30 PRs). For this project's scale
+            // that is sufficient. If pagination is ever needed, use github.paginate() instead.
             const { data: pullRequests } = await github.rest.pulls.list({
               owner: context.repo.owner,
               repo: context.repo.repo,

@@ -56,7 +56,7 @@ jobs:
         with:
           script: |
             const isDispatch = context.eventName === 'repository_dispatch';
-            console.log('Trigger: {context.eventName}');
+            console.log(`Trigger: ${context.eventName}`);
 
             let headRef, baseRef, headSha, prNumber;
             if (isDispatch) {
@@ -93,13 +93,13 @@ jobs:
 
       - name: "Fetch target branch"
         run: |
-          git fetch origin ${{ steps.context.outputs.base_ref }}:refs/remotes/origin/${{ steps.context.outputs.base_ref }}
+          git fetch origin "${{ steps.context.outputs.base_ref }}:refs/remotes/origin/${{ steps.context.outputs.base_ref }}"
 
       - name: "Check if PR branch is in sync with target"
         uses: actions/github-script@v6
         with:
           script: |
-            const { execSync } = require('child_process');
+            const { execFileSync } = require('child_process');
 
             // Use outputs from context step (works for both triggers)
             const targetBranch = '${{ steps.context.outputs.base_ref }}';
@@ -136,15 +136,16 @@ jobs:
             }
 
             try {
+              // Using execFileSync (no shell) to avoid command injection via branch names
               // Get the merge-base (common ancestor)
-              const mergeBase = execSync(
-                `git merge-base origin/${targetBranch} HEAD`,
+              const mergeBase = execFileSync(
+                'git', ['merge-base', `origin/${targetBranch}`, 'HEAD'],
                 { encoding: 'utf-8' }
               ).trim();
 
               // Get the target branch HEAD commit
-              const targetHead = execSync(
-                `git rev-parse origin/${targetBranch}`,
+              const targetHead = execFileSync(
+                'git', ['rev-parse', `origin/${targetBranch}`],
                 { encoding: 'utf-8' }
               ).trim();
 
@@ -157,8 +158,8 @@ jobs:
               }
 
               // Check how many commits behind
-              const behindCount = execSync(
-                `git rev-list --count ${mergeBase}..origin/${targetBranch}`,
+              const behindCount = execFileSync(
+                'git', ['rev-list', '--count', `${mergeBase}..origin/${targetBranch}`],
                 { encoding: 'utf-8' }
               ).trim();
 
