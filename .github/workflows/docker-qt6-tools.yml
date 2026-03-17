@@ -13,6 +13,10 @@ on:
     branches: [ master, dev ]
     paths:
       - '.github/docker/qt6-tools/**'
+  pull_request:
+    branches: [ master, dev ]
+    paths:
+      - '.github/docker/qt6-tools/**'
   workflow_dispatch:
 
 env:
