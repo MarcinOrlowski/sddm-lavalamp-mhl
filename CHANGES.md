@@ -7,7 +7,7 @@
 - Corrected theme version not showing proper version on the theme screen.
 - Tweaked glow intensity for better theme visibility.
 - Adjusted minimum metaball speed to prevent near-stationary metaballs.
-- Fixed UI auto-hide being immediately undone by cursor-hiding overlay triggering spurious mouse events.
+- Fixed UI auto-hide being immediately undone by cursor-hiding overlay.
 - Removed debug console logging from theme code.
 - Debian (`*.deb`) package no longer suggests manual SDDM restart.
 
