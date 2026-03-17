@@ -5,6 +5,7 @@
 - Added new color themes: Sunset, Neon, Arctic, Citrus, Crimson.
 - Fixed `test-virtual-display` helper always going full screen on Wayland.
 - Corrected theme version not showing proper version on the theme screen.
+- Adjusted minimum metaball speed to prevent near-stationary metaballs.
 - Removed debug console logging from theme code.
 
 ## v2.0.0 (2026-03-17)
