@@ -17,12 +17,6 @@ upper-left corner of your screen.
 
 ![Themes](img/themes.webp)
 
-## Configuration
-
-There's no configuration required, but if you fancy specific theme style, you can set it
-by editing `/usr/share/sddm/themes/lavalamp-mhl/theme.conf` file as per instructions provided
-in that file.
-
 ## Developers
 
 Interested in contributing to the project? See [developer docs](docs/dev.md) first.

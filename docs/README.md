@@ -49,3 +49,9 @@ For Debian and Ubuntu users, you can install the theme using a `.deb` package:
 
 **Note:** The package prevents accidental removal if the theme is currently active. To remove the
 package, first change to another theme, then run `sudo apt remove sddm-theme-lavalamp-mhl`.
+
+# Configuration
+
+There's no configuration required, but if you fancy specific theme style, you can set it
+by editing `/usr/share/sddm/themes/lavalamp-mhl/theme.conf` file as per instructions provided
+in that file.
