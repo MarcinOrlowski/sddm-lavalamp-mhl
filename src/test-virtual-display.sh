@@ -17,10 +17,10 @@ THEME_DIR="$(dirname "$0")"
 RESOLUTION="${1:-1280x720}"
 DISPLAY_NUM="${2:-1}"
 
-echo "Lava Lamp MHL animated SDDM Theme - Virtual Display Test"
-echo "Theme directory: $THEME_DIR"
-echo "Resolution: $RESOLUTION"
-echo "Display: :$DISPLAY_NUM"
+echo "Lava Lamp MHL - Virtual Display Test"
+echo "Theme directory: ${THEME_DIR}"
+echo "Resolution: ${RESOLUTION}"
+echo "Display: :${DISPLAY_NUM}"
 echo ""
 
 # Check if Xephyr is available
@@ -30,7 +30,7 @@ if ! command -v Xephyr &> /dev/null; then
     exit 1
 fi
 
-# Detect SDDM greeter binary (Qt 6 renamed it to sddm-greeter-qt6)
+# Detect SDDM greeter binary
 if command -v sddm-greeter-qt6 &> /dev/null; then
     GREETER_BIN="sddm-greeter-qt6"
 elif command -v sddm-greeter &> /dev/null; then
@@ -45,11 +45,11 @@ cleanup() {
     echo ""
     echo "Cleaning up..."
     # Kill any remaining processes
-    if [ ! -z "$XEPHYR_PID" ]; then
-        kill $XEPHYR_PID 2>/dev/null
+    if [ ! -z "${XEPHYR_PID}" ]; then
+        kill ${XEPHYR_PID} 2>/dev/null
     fi
-    if [ ! -z "$GREETER_PID" ]; then
-        kill $GREETER_PID 2>/dev/null
+    if [ ! -z "${GREETER_PID}" ]; then
+        kill ${GREETER_PID} 2>/dev/null
     fi
     echo "Test completed."
 }
@@ -58,14 +58,14 @@ cleanup() {
 trap cleanup EXIT
 
 echo "Starting Xephyr virtual display..."
-Xephyr :$DISPLAY_NUM -screen $RESOLUTION -title "SDDM Metaballs Theme Test" &
-XEPHYR_PID=$!
+Xephyr :${DISPLAY_NUM} -screen ${RESOLUTION} \
+    -title "SDDM Lava Lamp MHL Test" & XEPHYR_PID=$!
 
 # Wait for Xephyr to start
 sleep 2
 
 # Check if Xephyr started successfully
-if ! kill -0 $XEPHYR_PID 2>/dev/null; then
+if ! kill -0 ${XEPHYR_PID} 2>/dev/null; then
     echo "Error: Failed to start Xephyr"
     exit 1
 fi
@@ -76,8 +76,9 @@ echo "Close the window or press Ctrl+C to exit."
 echo ""
 
 # Run SDDM greeter in the virtual display
-env DISPLAY=":$DISPLAY_NUM" QT_QPA_PLATFORM=xcb QT_SCALE_FACTOR=1 QT_AUTO_SCREEN_SCALE_FACTOR=0 QT_ENABLE_HIGHDPI_SCALING=0 ${GREETER_BIN} --test-mode --theme "$THEME_DIR" &
-GREETER_PID=$!
+env DISPLAY=":${DISPLAY_NUM}" QT_QPA_PLATFORM=xcb QT_SCALE_FACTOR=1 \
+    QT_AUTO_SCREEN_SCALE_FACTOR=0 QT_ENABLE_HIGHDPI_SCALING=0 \
+    ${GREETER_BIN} --test-mode --theme "${THEME_DIR}" & GREETER_PID=$!
 
 # Wait for either process to exit
-wait $XEPHYR_PID
+wait ${XEPHYR_PID{}
