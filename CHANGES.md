@@ -2,6 +2,7 @@
 
 ## @dev (TBD)
 - Ported to Plasam 6 (dropped Plasma 5 completely).
+- Added new, better looking project logo.
 - Merged background gradient and metaball rendering into a single shader pass.
 - Add distance culling to skip far-away metaballs in fragment shader.
 - Refactored metaball math, eliminating redundant trig calls and massively speeding all up.
