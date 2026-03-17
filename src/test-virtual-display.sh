@@ -81,4 +81,4 @@ env DISPLAY=":${DISPLAY_NUM}" QT_QPA_PLATFORM=xcb QT_SCALE_FACTOR=1 \
     ${GREETER_BIN} --test-mode --theme "${THEME_DIR}" & GREETER_PID=$!
 
 # Wait for either process to exit
-wait ${XEPHYR_PID{}
+wait ${XEPHYR_PID}
