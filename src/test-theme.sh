@@ -11,10 +11,10 @@
 #
 #####################################################################
 
-THEME_DIR="$(dirname "$0")"
+THEME_DIR="$(dirname "${0}")"
 THEME_NAME="lavalamp-mhl"
 
-echo "Testing Lavalamp MHL SDDM Theme..."
+echo "Testing Lavalamp MHL SDDM Theme…"
 echo "Theme directory: ${THEME_DIR}"
 echo ""
 
@@ -29,12 +29,12 @@ else
 fi
 
 # Test with default resolution
-echo "Starting SDDM theme test (using ${GREETER_BIN})..."
+echo "Starting SDDM theme test (using ${GREETER_BIN})…"
 echo "Press Ctrl+C to exit the test."
 echo ""
 
 # Run the test
-${GREETER_BIN} --test-mode --theme .
+"${GREETER_BIN}" --test-mode --theme .
 
 echo ""
 echo "Theme test completed."
