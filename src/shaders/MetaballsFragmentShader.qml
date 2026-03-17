@@ -12,14 +12,7 @@ import QtQuick 2.15
 QtObject {
     readonly property string source: "
         uniform lowp float qt_Opacity;
-        uniform highp float time;
-        uniform highp float randomSeed;
         uniform highp vec2 resolution;
-        uniform highp int numMetaballs;
-        uniform highp float minSize;
-        uniform highp float maxSize;
-        uniform highp float minSpeed;
-        uniform highp float maxSpeed;
         uniform highp float threshold;
         uniform highp vec3 baseColor;
         uniform highp vec3 gradientColor1;
@@ -27,8 +20,6 @@ QtObject {
         uniform highp vec3 gradientColor3;
         uniform highp vec3 gradientColor4;
         uniform highp int gradientMode;
-        uniform highp float verticalBias;
-        uniform highp float horizontalScale;
         uniform highp bool backgroundGradientEnabled;
         uniform highp vec3 backgroundGradientColor1;
         uniform highp vec3 backgroundGradientColor2;
@@ -40,6 +31,7 @@ QtObject {
         uniform highp float glowMidThreshold;
         uniform highp float glowOuterThreshold;
         uniform highp float glowMinFieldStrength;
+        {{METABALL_UNIFORMS}}
         varying highp vec2 qt_TexCoord0;
 
         // Calculate gradient color based on position and gradient mode
@@ -88,68 +80,11 @@ QtObject {
         }
 
         vec3 getMetaball(int index) {
-            float seed = (float(index) + randomSeed) * 12.9898;
-            float randomX = fract(sin(seed) * 43758.5453);
-            float randomY = fract(sin(seed * 1.618) * 43758.5453);
-            float randomVX = fract(sin(seed * 2.718) * 43758.5453);
-            float randomVY = fract(sin(seed * 3.141) * 43758.5453);
-            float randomR = fract(sin(seed * 1.414) * 43758.5453);
-            float randomSpeed = fract(sin(seed * 2.236) * 43758.5453);  // New random for speed
-
-            // Use configurable size range
-            float radius = randomR * (maxSize - minSize) + minSize;
-
-            // Use configurable speed range - each metaball gets its own speed!
-            float speed = randomSpeed * (maxSpeed - minSpeed) + minSpeed;
-            float vx = (randomVX - 0.5) * 2.0 * speed * horizontalScale;
-            float vy = (randomVY - 0.5) * 2.0 * speed * verticalBias;
-
-            // Initial positions
-            float startX = randomX * (resolution.x - 2.0 * radius) + radius;
-            float startY = randomY * (resolution.y - 2.0 * radius) + radius;
-
-            // Simple linear animation
-            float x = startX + vx * time;
-            float y = startY + vy * time;
-
-            // Bouncing boundaries: ball bounces when fully off-screen
-            // Left/right boundaries: ball bounces at -radius and resolution.x + radius
-            float leftBound = -radius;
-            float rightBound = resolution.x + radius;
-            float topBound = -radius;
-            float bottomBound = resolution.y + radius;
-
-            // Calculate total bounce distance for each axis
-            float bounceWidth = rightBound - leftBound;  // resolution.x + 2*radius
-            float bounceHeight = bottomBound - topBound; // resolution.y + 2*radius
-
-            // Ball bouncing
-            // For X axis
-            float relativeX = x - leftBound; // Position relative to left bound
-            float bounceCount = floor(relativeX / bounceWidth);
-            float posInCycle = relativeX - bounceCount * bounceWidth;
-
-            // Even bounces: normal direction, odd: reversed direction
-            if (mod(bounceCount, 2.0) == 0.0) {
-                x = leftBound + posInCycle;
-            } else {
-                x = leftBound + bounceWidth - posInCycle;
-            }
-
-            // For Y axis
-            float relativeY = y - topBound; // Position relative to top bound
-            bounceCount = floor(relativeY / bounceHeight);
-            posInCycle = relativeY - bounceCount * bounceHeight;
-
-            if (mod(bounceCount, 2.0) == 0.0) {
-                y = topBound + posInCycle;
-            } else {
-                y = topBound + bounceHeight - posInCycle;
-            }
-
-            float r = radius;  // Use full configured radius
-
-            return vec3(x, y, r);
+            int matIdx = index / 4;
+            int colIdx = index - matIdx * 4;
+            vec4 col = vec4(0.0);
+            {{METABALL_LOOKUP}}
+            return col.xyz;
         }
 
         void main() {

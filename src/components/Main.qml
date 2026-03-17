@@ -21,6 +21,117 @@ Rectangle {
     // Hide mouse cursor when UI is hidden
     property bool shouldHideCursor: themeConfig.uiAutoHide && !uiVisible
 
+    // Random seed for metaball initial positions (set once at startup)
+    property real metaballRandomSeed: Math.random() * 10000.0
+
+    // --- CPU-side metaball position computation ---
+
+    // Number of mat4 uniforms needed to pack all metaballs (4 per mat4)
+    readonly property int metaballMatCount: Math.ceil(simulationConfig.metaballCount / 4)
+
+    function fract(x) {
+        return x - Math.floor(x);
+    }
+
+    function computeMetaballPositions(time, randomSeed, count, resW, resH, minSize, maxSize, minSpeed, maxSpeed, vBias, hScale) {
+        var positions = [];
+        for (var i = 0; i < count; i++) {
+            var seed = (i + randomSeed) * 12.9898;
+            var randomX = fract(Math.sin(seed) * 43758.5453);
+            var randomY = fract(Math.sin(seed * 1.618) * 43758.5453);
+            var randomVX = fract(Math.sin(seed * 2.718) * 43758.5453);
+            var randomVY = fract(Math.sin(seed * 3.141) * 43758.5453);
+            var randomR = fract(Math.sin(seed * 1.414) * 43758.5453);
+            var randomSpd = fract(Math.sin(seed * 2.236) * 43758.5453);
+
+            var radius = randomR * (maxSize - minSize) + minSize;
+            var speed = randomSpd * (maxSpeed - minSpeed) + minSpeed;
+            var vx = (randomVX - 0.5) * 2.0 * speed * hScale;
+            var vy = (randomVY - 0.5) * 2.0 * speed * vBias;
+
+            var startX = randomX * (resW - 2.0 * radius) + radius;
+            var startY = randomY * (resH - 2.0 * radius) + radius;
+
+            var x = startX + vx * time;
+            var y = startY + vy * time;
+
+            // Bouncing boundaries
+            var leftBound = -radius;
+            var rightBound = resW + radius;
+            var topBound = -radius;
+            var bottomBound = resH + radius;
+
+            var bounceWidth = rightBound - leftBound;
+            var bounceHeight = bottomBound - topBound;
+
+            // X axis bounce
+            var relativeX = x - leftBound;
+            var bounceCount = Math.floor(relativeX / bounceWidth);
+            var posInCycle = relativeX - bounceCount * bounceWidth;
+            if (bounceCount % 2 === 0) {
+                x = leftBound + posInCycle;
+            } else {
+                x = leftBound + bounceWidth - posInCycle;
+            }
+
+            // Y axis bounce
+            var relativeY = y - topBound;
+            bounceCount = Math.floor(relativeY / bounceHeight);
+            posInCycle = relativeY - bounceCount * bounceHeight;
+            if (bounceCount % 2 === 0) {
+                y = topBound + posInCycle;
+            } else {
+                y = topBound + bounceHeight - posInCycle;
+            }
+
+            positions.push({ x: x, y: y, r: radius });
+        }
+        return positions;
+    }
+
+    function packMetaballsToMatrices(positions, matCount) {
+        var matrices = [];
+        for (var m = 0; m < matCount; m++) {
+            var xs = [0, 0, 0, 0];
+            var ys = [0, 0, 0, 0];
+            var rs = [0, 0, 0, 0];
+            for (var c = 0; c < 4; c++) {
+                var idx = m * 4 + c;
+                if (idx < positions.length) {
+                    xs[c] = positions[idx].x;
+                    ys[c] = positions[idx].y;
+                    rs[c] = positions[idx].r;
+                }
+            }
+            // Row-major in QML; GLSL mat4[col] accesses columns.
+            // Qt transposes, so rows here become columns in GLSL.
+            matrices.push(Qt.matrix4x4(
+                xs[0], xs[1], xs[2], xs[3],
+                ys[0], ys[1], ys[2], ys[3],
+                rs[0], rs[1], rs[2], rs[3],
+                0, 0, 0, 0
+            ));
+        }
+        return matrices;
+    }
+
+    function generateMetaballUniforms(matCount) {
+        var lines = [];
+        for (var i = 0; i < matCount; i++) {
+            lines.push("uniform highp mat4 metaballData" + i + ";");
+        }
+        return lines.join("\n        ");
+    }
+
+    function generateMetaballLookup(matCount) {
+        var lines = [];
+        for (var i = 0; i < matCount; i++) {
+            var prefix = (i === 0) ? "if" : "else if";
+            lines.push(prefix + " (matIdx == " + i + ") col = metaballData" + i + "[colIdx];");
+        }
+        return lines.join("\n            ");
+    }
+
     TextConstants { id: textConstants }
 
     // Global simulation parameters (not theme-specific)
@@ -461,27 +572,18 @@ Rectangle {
 
     // Metaballs background effect
     ShaderEffect {
+        id: metaballShader
         anchors.fill: parent
 
         property real time: 0
-        property real randomSeed: Math.random() * 10000.0  // Random seed for varied initial positions
-        // Direct binding to config values to ensure shader gets updated
-        property int numMetaballs: themeConfig.metaballCount
         property size resolution: Qt.size(container.width, container.height)
-        property real minSize: themeConfig.metaballMinSize * container.height
-        property real maxSize: themeConfig.metaballMaxSize * container.height
-        property real minSpeed: themeConfig.metaballMinSpeed
-        property real maxSpeed: themeConfig.metaballMaxSpeed
         property real threshold: themeConfig.metaballThreshold
         property vector3d baseColor: Qt.vector3d(themeConfig.metaballBaseColorR, themeConfig.metaballBaseColorG, themeConfig.metaballBaseColorB)
-        property string gradientType: themeConfig.gradientType
         property vector3d gradientColor1: Qt.vector3d(themeConfig.gradientColor1Rgb.r, themeConfig.gradientColor1Rgb.g, themeConfig.gradientColor1Rgb.b)
         property vector3d gradientColor2: Qt.vector3d(themeConfig.gradientColor2Rgb.r, themeConfig.gradientColor2Rgb.g, themeConfig.gradientColor2Rgb.b)
         property vector3d gradientColor3: Qt.vector3d(themeConfig.gradientColor3Rgb.r, themeConfig.gradientColor3Rgb.g, themeConfig.gradientColor3Rgb.b)
         property vector3d gradientColor4: Qt.vector3d(themeConfig.gradientColor4Rgb.r, themeConfig.gradientColor4Rgb.g, themeConfig.gradientColor4Rgb.b)
         property int gradientMode: themeConfig.gradientModeValue
-        property real verticalBias: themeConfig.verticalBias
-        property real horizontalScale: themeConfig.horizontalScale
         property bool backgroundGradientEnabled: themeConfig.backgroundGradientEnabled
         property vector3d backgroundGradientColor1: Qt.vector3d(themeConfig.backgroundColor1Rgb.r, themeConfig.backgroundColor1Rgb.g, themeConfig.backgroundColor1Rgb.b)
         property vector3d backgroundGradientColor2: Qt.vector3d(themeConfig.backgroundColor2Rgb.r, themeConfig.backgroundColor2Rgb.g, themeConfig.backgroundColor2Rgb.b)
@@ -494,18 +596,47 @@ Rectangle {
         property real glowOuterThreshold: themeConfig.glowOuterThreshold
         property real glowMinFieldStrength: themeConfig.glowMinFieldStrength
 
-        // Debug output to verify values
-        // onNumMetaballsChanged: console.log("Shader numMetaballs changed to:", numMetaballs)
-        // onBaseColorChanged: console.log("Shader baseColor changed to:", baseColor)
+        // CPU-computed metaball position matrices (4 metaballs packed per mat4)
+        property matrix4x4 metaballData0: Qt.matrix4x4(1,0,0,0, 0,1,0,0, 0,0,1,0, 0,0,0,1)
+        property matrix4x4 metaballData1: Qt.matrix4x4(1,0,0,0, 0,1,0,0, 0,0,1,0, 0,0,0,1)
+        property matrix4x4 metaballData2: Qt.matrix4x4(1,0,0,0, 0,1,0,0, 0,0,1,0, 0,0,0,1)
+        property matrix4x4 metaballData3: Qt.matrix4x4(1,0,0,0, 0,1,0,0, 0,0,1,0, 0,0,0,1)
+        property matrix4x4 metaballData4: Qt.matrix4x4(1,0,0,0, 0,1,0,0, 0,0,1,0, 0,0,0,1)
+        property matrix4x4 metaballData5: Qt.matrix4x4(1,0,0,0, 0,1,0,0, 0,0,1,0, 0,0,0,1)
+        property matrix4x4 metaballData6: Qt.matrix4x4(1,0,0,0, 0,1,0,0, 0,0,1,0, 0,0,0,1)
+        property matrix4x4 metaballData7: Qt.matrix4x4(1,0,0,0, 0,1,0,0, 0,0,1,0, 0,0,0,1)
+        property matrix4x4 metaballData8: Qt.matrix4x4(1,0,0,0, 0,1,0,0, 0,0,1,0, 0,0,0,1)
 
-        // Force shader recompilation when key properties change
-        property string shaderKey: numMetaballs + "_" + minSize + "_" + maxSize
+        onTimeChanged: {
+            var minSizePx = themeConfig.metaballMinSize * container.height;
+            var maxSizePx = themeConfig.metaballMaxSize * container.height;
+            var positions = computeMetaballPositions(
+                time, container.metaballRandomSeed, themeConfig.metaballCount,
+                container.width, container.height,
+                minSizePx, maxSizePx,
+                themeConfig.metaballMinSpeed, themeConfig.metaballMaxSpeed,
+                themeConfig.verticalBias, themeConfig.horizontalScale
+            );
+            var matrices = packMetaballsToMatrices(positions, container.metaballMatCount);
+            if (matrices.length > 0) metaballData0 = matrices[0];
+            if (matrices.length > 1) metaballData1 = matrices[1];
+            if (matrices.length > 2) metaballData2 = matrices[2];
+            if (matrices.length > 3) metaballData3 = matrices[3];
+            if (matrices.length > 4) metaballData4 = matrices[4];
+            if (matrices.length > 5) metaballData5 = matrices[5];
+            if (matrices.length > 6) metaballData6 = matrices[6];
+            if (matrices.length > 7) metaballData7 = matrices[7];
+            if (matrices.length > 8) metaballData8 = matrices[8];
+        }
 
         vertexShader: vertexShaderSource.source
 
         fragmentShader: {
-            var shader = fragmentShaderSource.source.replace("{{MAX_METABALLS}}", themeConfig.metaballCount.toString())
-            return shader
+            var shader = fragmentShaderSource.source;
+            shader = shader.replace("{{MAX_METABALLS}}", themeConfig.metaballCount.toString());
+            shader = shader.replace("{{METABALL_UNIFORMS}}", generateMetaballUniforms(container.metaballMatCount));
+            shader = shader.replace("{{METABALL_LOOKUP}}", generateMetaballLookup(container.metaballMatCount));
+            return shader;
         }
 
         // Use SequentialAnimation with very large duration to avoid resets
