@@ -140,6 +140,7 @@ Rectangle {
         readonly property string uiFont: "Arial"
         readonly property real formOpacity: 0.85
         readonly property bool debugAlwaysShowSessionSelector: false
+        readonly property bool showThemeName: true
     }
 
     // Visual themes (colors and rendering only)
@@ -394,6 +395,7 @@ Rectangle {
         readonly property string uiFont: simulationConfig.uiFont
         readonly property real formOpacity: simulationConfig.formOpacity
         readonly property bool debugAlwaysShowSessionSelector: simulationConfig.debugAlwaysShowSessionSelector
+        readonly property bool showThemeName: simulationConfig.showThemeName
 
         // Visual properties (theme-specific)
         readonly property string iconColor: activeTheme.iconColor
@@ -1350,7 +1352,7 @@ Rectangle {
         anchors.top: parent.top
         anchors.left: parent.left
         anchors.margins: 30
-        width: 48
+        width: settingsButtonRow.width
         height: 48
 
         opacity: themeConfig.uiAutoHide ? (uiVisible ? 1.0 : 0.0) : 1.0
@@ -1361,24 +1363,50 @@ Rectangle {
             }
         }
 
-        Image {
-            id: settingsIcon
-            anchors.centerIn: parent
-            width: 40
-            height: 40
-            source: "../assets/random.svgz"
-            smooth: true
-            visible: false
-        }
+        Row {
+            id: settingsButtonRow
+            spacing: 8
+            anchors.verticalCenter: parent.verticalCenter
 
-        ColorOverlay {
-            anchors.fill: settingsIcon
-            source: settingsIcon
-            color: themeConfig.iconColor
-            opacity: settingsMouseArea.containsMouse ? 1.0 : 0.8
+            Item {
+                width: 48
+                height: 48
 
-            Behavior on opacity {
-                NumberAnimation { duration: 150 }
+                Image {
+                    id: settingsIcon
+                    anchors.centerIn: parent
+                    width: 40
+                    height: 40
+                    source: "../assets/random.svgz"
+                    smooth: true
+                    visible: false
+                }
+
+                ColorOverlay {
+                    anchors.fill: settingsIcon
+                    source: settingsIcon
+                    color: themeConfig.iconColor
+                    opacity: settingsMouseArea.containsMouse ? 1.0 : 0.8
+
+                    Behavior on opacity {
+                        NumberAnimation { duration: 150 }
+                    }
+                }
+            }
+
+            Text {
+                id: themeNameLabel
+                text: currentTheme.charAt(0).toUpperCase() + currentTheme.slice(1)
+                color: themeConfig.iconColor
+                font.family: themeConfig.uiFont
+                font.pixelSize: 16
+                anchors.verticalCenter: parent.verticalCenter
+                visible: themeConfig.showThemeName
+                opacity: settingsMouseArea.containsMouse ? 1.0 : 0.8
+
+                Behavior on opacity {
+                    NumberAnimation { duration: 150 }
+                }
             }
         }
 
