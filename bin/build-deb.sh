@@ -59,8 +59,9 @@ set -uo pipefail
 # NOTE: our root dir means parent folder of where scripts lives
 # shellcheck disable=SC2155
 readonly SCRIPT_DIR="$(dirname "$(realpath "${0}")")"
-readonly ROOT_DIR="$(dirname "${SCRIPT_DIR}")"
-pushd "${ROOT_DIR}" > /dev/null
+ROOT_DIR="$(dirname "${SCRIPT_DIR}")"
+readonly ROOT_DIR
+pushd "${ROOT_DIR}" > /dev/null || exit
 
 # Package information
 PKG_NAME="sddm-theme-lavalamp-mhl"
@@ -68,18 +69,23 @@ ARCH="all"
 
 # Read version from metadata.desktop file
 METADATA_FILE="${ROOT_DIR}/src/metadata.desktop"
-if [ ! -f "$METADATA_FILE" ]; then
-    echo "ERROR: Metadata file not found: $METADATA_FILE"
+if [ ! -f "${METADATA_FILE}" ]; then
+    echo "ERROR: Metadata file not found: ${METADATA_FILE}"
     exit 1
 fi
 
-VERSION=$(grep "^Version=" "$METADATA_FILE" | cut -d'=' -f2 | tr -d '\r\n')
-if [ -z "$VERSION" ]; then
-    echo "ERROR: Version not found in $METADATA_FILE"
+VERSION=$(grep "^Version=" "${METADATA_FILE}" | cut -d'=' -f2 | tr -d '\r\n')
+if [ -z "${VERSION}" ]; then
+    echo "ERROR: Version not found in ${METADATA_FILE}"
     exit 1
 fi
 
-echo "Version read from metadata: $VERSION"
+echo "Version read from metadata: ${VERSION}"
+
+# Inject version into theme.conf so QML can read it at runtime
+THEME_CONF="${ROOT_DIR}/src/theme.conf"
+sed -i "s/^version=.*/version=${VERSION}/" "${THEME_CONF}"
+
 MAINTAINER="Marcin Orlowski <mail@marcinorlowski.com>"
 DESCRIPTION="Lava Lamp animated SDDM login theme"
 HOMEPAGE="https://github.com/MarcinOrlowski/sddm-lavalamp-mhl"
@@ -96,42 +102,42 @@ echo "Building package: ${PKG_NAME}_${VERSION}_${ARCH}.deb"
 echo
 
 # Validate source directory exists
-if [ ! -d "$SOURCE_DIR" ]; then
-    echo "ERROR: Source directory not found: $SOURCE_DIR"
+if [ ! -d "${SOURCE_DIR}" ]; then
+    echo "ERROR: Source directory not found: ${SOURCE_DIR}"
     echo "Please ensure you're running this script from the project root."
     exit 1
 fi
 
 # Clean and create build directory
-echo "Preparing build directory..."
-rm -rf "$BUILD_DIR"
-mkdir -p "$DEBIAN_DIR"
-mkdir -p "$THEME_INSTALL_DIR"
+echo "Preparing build directory…"
+rm -rf "${BUILD_DIR}"
+mkdir -p "${DEBIAN_DIR}"
+mkdir -p "${THEME_INSTALL_DIR}"
 
 # Copy theme files to package directory
-echo "Copying theme files..."
-cp -r "$SOURCE_DIR"/* "$THEME_INSTALL_DIR/"
+echo "Copying theme files…"
+cp -r "${SOURCE_DIR}"/* "${THEME_INSTALL_DIR}/"
 
 # Remove test scripts from package (not needed in installation)
-rm -f "$THEME_INSTALL_DIR"/test-*.sh
+rm -f "${THEME_INSTALL_DIR}"/test-*.sh
 
 # Ensure proper permissions
-find "$THEME_INSTALL_DIR" -type f -exec chmod 644 {} \;
-find "$THEME_INSTALL_DIR" -type d -exec chmod 755 {} \;
+find "${THEME_INSTALL_DIR}" -type f -exec chmod 644 {} \;
+find "${THEME_INSTALL_DIR}" -type d -exec chmod 755 {} \;
 
 # Create DEBIAN/control file
-echo "Creating package control file..."
-cat > "$DEBIAN_DIR/control" << EOF
-Package: $PKG_NAME
-Version: $VERSION
+echo "Creating package control file…"
+cat > "${DEBIAN_DIR}/control" << EOF
+Package: ${PKG_NAME}
+Version: ${VERSION}
 Section: kde
 Priority: optional
-Architecture: $ARCH
-Depends: plasma-framework, plasma-workspace
-Recommends: desktop-base (>= 9.0.0~), sddm
+Architecture: ${ARCH}
+Depends: sddm, qml6-module-qt5compat-graphicaleffects, qml6-module-qtquick-virtualkeyboard
+Recommends: desktop-base (>= 9.0.0~)
 Provides: sddm-theme
-Maintainer: $MAINTAINER
-Description: $DESCRIPTION
+Maintainer: ${MAINTAINER}
+Description: ${DESCRIPTION}
  Lava Lamp is an animated SDDM dynamic theme stylized after the classic
  lava lamp. It features a mesmerizing animation of colorful blobs that move
  and change shape, creating a relaxing and soothing visual effect.
@@ -141,12 +147,12 @@ Description: $DESCRIPTION
  .
  This package provides an SDDM theme that can be selected in display
  manager configuration or through system settings.
-Homepage: $HOMEPAGE
+Homepage: ${HOMEPAGE}
 EOF
 
 # Create DEBIAN/postinst script (post-installation)
-echo "Creating post-installation script..."
-cat > "$DEBIAN_DIR/postinst" << 'EOF'
+echo "Creating post-installation script…"
+cat > "${DEBIAN_DIR}/postinst" << 'EOF'
 #!/bin/sh
 set -e
 
@@ -164,32 +170,32 @@ echo "Theme configuration: /usr/share/sddm/themes/lavalamp-mhl/theme.conf"
 exit 0
 EOF
 
-chmod 755 "$DEBIAN_DIR/postinst"
+chmod 755 "${DEBIAN_DIR}/postinst"
 
 # Create DEBIAN/prerm script (pre-removal)
-echo "Creating pre-removal script..."
-cat > "$DEBIAN_DIR/prerm" << 'EOF'
+echo "Creating pre-removal script…"
+cat > "${DEBIAN_DIR}/prerm" << 'EOF'
 #!/bin/sh
 set -e
 
 if [ "$1" = "remove" ] || [ "$1" = "deconfigure" ]; then
     # Check if this theme is currently active and prevent removal
     THEME_ACTIVE=0
-    
+
     # Check main sddm.conf
     if [ -f /etc/sddm.conf ]; then
         if grep -q "Current=lavalamp-mhl" /etc/sddm.conf 2>/dev/null; then
             THEME_ACTIVE=1
         fi
     fi
-    
+
     # Check sddm.conf.d directory
     if [ -d /etc/sddm.conf.d ]; then
         if grep -q "Current=lavalamp-mhl" /etc/sddm.conf.d/* 2>/dev/null; then
             THEME_ACTIVE=1
         fi
     fi
-    
+
     if [ "$THEME_ACTIVE" = "1" ]; then
         echo "ERROR: Cannot remove sddm-theme-lavalamp-mhl - theme is currently active!"
         echo
@@ -213,12 +219,12 @@ fi
 exit 0
 EOF
 
-chmod 755 "$DEBIAN_DIR/prerm"
+chmod 755 "${DEBIAN_DIR}/prerm"
 
 # Create copyright file
-echo "Creating copyright file..."
-mkdir -p "$PACKAGE_DIR/usr/share/doc/$PKG_NAME"
-cat > "$PACKAGE_DIR/usr/share/doc/$PKG_NAME/copyright" << EOF
+echo "Creating copyright file…"
+mkdir -p "${PACKAGE_DIR}/usr/share/doc/${PKG_NAME}"
+cat > "${PACKAGE_DIR}/usr/share/doc/${PKG_NAME}/copyright" << EOF
 Format: https://www.debian.org/doc/packaging-manuals/copyright-format/1.0/
 Upstream-Name: SDDM Lava Lamp MHL Theme
 Upstream-Contact: Marcin Orlowski <mail@marcinorlowski.com>
@@ -249,13 +255,13 @@ License: MIT
 EOF
 
 # Calculate installed size (in KB)
-INSTALLED_SIZE=$(du -sk "$PACKAGE_DIR" | cut -f1)
-echo "Installed-Size: $INSTALLED_SIZE" >> "$DEBIAN_DIR/control"
+INSTALLED_SIZE=$(du -sk "${PACKAGE_DIR}" | cut -f1)
+echo "Installed-Size: ${INSTALLED_SIZE}" >> "${DEBIAN_DIR}/control"
 
 # Build the package using fakeroot
 echo
-echo "Building .deb package..."
-cd "$BUILD_DIR"
+echo "Building .deb package…"
+cd "${BUILD_DIR}" || exit
 
 if command -v fakeroot >/dev/null 2>&1; then
     fakeroot dpkg-deb --build "${PKG_NAME}_${VERSION}_${ARCH}"
@@ -268,23 +274,23 @@ fi
 DEB_DIR="${ROOT_DIR}"
 DEB_FILE="${PKG_NAME}_${VERSION}_${ARCH}.deb"
 DEB_FULL="${DEB_DIR}/${DEB_FILE}"
-mv "$DEB_FILE" "$DEB_DIR/"
+mv "${DEB_FILE}" "${DEB_DIR}/"
 
 echo
 echo "=== Package built successfully! ==="
-echo "Package: $DEB_FULL"
-echo "Size: $(du -h "$DEB_FULL" | cut -f1)"
+echo "Package: ${DEB_FULL}"
+echo "Size: $(du -h "${DEB_FULL}" | cut -f1)"
 echo
 echo "To install:"
-echo "  sudo dpkg -i $DEB_FILE"
+echo "  sudo dpkg -i ${DEB_FILE}"
 echo "  sudo apt-get install -f"
 echo
 echo "To verify package contents:"
-echo "  dpkg -c $DEB_FILE"
+echo "  dpkg -c ${DEB_FILE}"
 echo
 echo "To get package info:"
-echo "  dpkg -I $DEB_FILE"
+echo "  dpkg -I ${DEB_FILE}"
 echo
 
 # Clean up build directory
-rm -rf "$BUILD_DIR"
+rm -rf "${BUILD_DIR}"
