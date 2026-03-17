@@ -348,6 +348,40 @@ Rectangle {
             readonly property real glowOuterThreshold: 0.04
             readonly property real glowMinFieldStrength: 0.004
         }
+
+        readonly property QtObject citrus: QtObject {
+            readonly property string gradientType: "vertical"
+            readonly property string gradientColor1: "#FFD700"
+            readonly property string gradientColor2: "#FF9800"
+            readonly property string gradientColor3: "#FFD700"
+            readonly property string gradientColor4: "#FF9800"
+            readonly property bool backgroundGradientEnabled: true
+            readonly property string backgroundGradientType: "vertical"
+            readonly property string backgroundColor1: "#2a1e08"
+            readonly property string backgroundColor2: "#1a1004"
+            readonly property string backgroundColor3: "#2a1e08"
+            readonly property string backgroundColor4: "#1a1004"
+            readonly property string iconColor: "#FFD700"
+            readonly property string suspendIconColor: "#FFD700"
+            readonly property string hibernateIconColor: "#FFB800"
+            readonly property string shutdownIconColor: "#FF6060"
+            readonly property string rebootIconColor: "#80FF80"
+            readonly property int clockFontSize: 90
+            readonly property string clockColor: "#FFE066"
+            readonly property string uiPrimaryColor: "#8B6914"
+            readonly property string uiSecondaryColor: "#D4A020"
+            readonly property string uiTextColor: "#FFF0CC"
+            readonly property string uiBackgroundColor: "#1F1508"
+            readonly property string welcomeTextColor: "#FFD700"
+            readonly property string inputLabelColor: "#C09830"
+            readonly property string copyrightTextColor: "#C0A860"
+            readonly property bool glowEffectEnabled: true
+            readonly property real glowIntensity: 3.0
+            readonly property real glowInnerThreshold: 0.7
+            readonly property real glowMidThreshold: 0.3
+            readonly property real glowOuterThreshold: 0.05
+            readonly property real glowMinFieldStrength: 0.005
+        }
     }
 
     // Theme cycling state
@@ -368,6 +402,7 @@ Rectangle {
         "sunset",
         "neon",
         "arctic",
+        "citrus",
     ]
 
     // Active theme selection
@@ -378,6 +413,7 @@ Rectangle {
             case "sunset": return themes.sunset
             case "neon": return themes.neon
             case "arctic": return themes.arctic
+            case "citrus": return themes.citrus
             case "heat":
             default: return themes.heat
         }
