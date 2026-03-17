@@ -279,6 +279,40 @@ Rectangle {
             readonly property real glowOuterThreshold: 0.08
             readonly property real glowMinFieldStrength: 0.008
         }
+
+        readonly property QtObject neon: QtObject {
+            readonly property string gradientType: "corners"
+            readonly property string gradientColor1: "#FF00FF"
+            readonly property string gradientColor2: "#00BFFF"
+            readonly property string gradientColor3: "#FF1493"
+            readonly property string gradientColor4: "#7B00FF"
+            readonly property bool backgroundGradientEnabled: true
+            readonly property string backgroundGradientType: "corners"
+            readonly property string backgroundColor1: "#0a0020"
+            readonly property string backgroundColor2: "#000a1a"
+            readonly property string backgroundColor3: "#10001a"
+            readonly property string backgroundColor4: "#050010"
+            readonly property string iconColor: "#FF00FF"
+            readonly property string suspendIconColor: "#00BFFF"
+            readonly property string hibernateIconColor: "#7B00FF"
+            readonly property string shutdownIconColor: "#FF1493"
+            readonly property string rebootIconColor: "#00FF88"
+            readonly property int clockFontSize: 90
+            readonly property string clockColor: "#E0B0FF"
+            readonly property string uiPrimaryColor: "#7B00FF"
+            readonly property string uiSecondaryColor: "#FF00FF"
+            readonly property string uiTextColor: "#F0E0FF"
+            readonly property string uiBackgroundColor: "#0D0020"
+            readonly property string welcomeTextColor: "#FF00FF"
+            readonly property string inputLabelColor: "#A060FF"
+            readonly property string copyrightTextColor: "#8080C0"
+            readonly property bool glowEffectEnabled: true
+            readonly property real glowIntensity: 3.0
+            readonly property real glowInnerThreshold: 0.7
+            readonly property real glowMidThreshold: 0.3
+            readonly property real glowOuterThreshold: 0.06
+            readonly property real glowMinFieldStrength: 0.006
+        }
     }
 
     // Theme cycling state
@@ -297,6 +331,7 @@ Rectangle {
         "ocean",
         "forest",
         "sunset",
+        "neon",
     ]
 
     // Active theme selection
@@ -305,6 +340,7 @@ Rectangle {
             case "ocean": return themes.ocean
             case "forest": return themes.forest
             case "sunset": return themes.sunset
+            case "neon": return themes.neon
             case "heat":
             default: return themes.heat
         }
