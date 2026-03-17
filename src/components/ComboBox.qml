@@ -1,4 +1,4 @@
-import QtQuick 2.15
+import QtQuick
 
 /**
  * Lava Lamp MHL: SDDM dynamic login theme
