@@ -110,12 +110,15 @@ void main() {
         float dx = metaball.x - x;
         float dy = metaball.y - y;
         float radius = metaball.z;
-
-        if (metaball.x < -1000.0 || metaball.y < -1000.0) continue;
+        float rSq = radius * radius;
 
         float distSq = dx * dx + dy * dy;
+
+        // Skip metaballs too far to contribute meaningfully (contribution < 0.001)
+        if (distSq > rSq * 1000.0) continue;
+
         if (distSq > 0.0) {
-            sum += (radius * radius) / distSq;
+            sum += rSq / distSq;
         }
     }
 
