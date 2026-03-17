@@ -49,6 +49,8 @@ The `.qsb` files must be committed — they are the shaders that Qt 6 loads at r
 
 ## Testing
 
+NOTE: To exit you may need to `<ALT>-<TAB>` then just `<CTRL>-C` to kill the running preview.
+
 Test the theme in a windowed virtual display via Xephyr (recommended):
 
 ```bash
@@ -62,9 +64,6 @@ Or in SDDM's fullscreen test mode:
 ```bash
 cd src && ./test-theme.sh
 ```
-
-The test scripts auto-detect the greeter binary (`sddm-greeter-qt6` on Plasma 6,
-`sddm-greeter` on older systems).
 
 ## Building packages
 
