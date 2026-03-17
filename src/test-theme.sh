@@ -5,7 +5,7 @@
 # Lava Lamp MHL: SDDM dynamic login theme
 #
 # @author    Marcin Orlowski <mail (#) marcinOrlowski (.) com>
-# @copyright 2025 Marcin Orlowski
+# @copyright 2025-2026 Marcin Orlowski#
 # @license   http://www.opensource.org/licenses/mit-license.php MIT
 # @link      https://github.com/MarcinOrlowski/sddm-lavalamp-mhl
 #
@@ -18,19 +18,23 @@ echo "Testing Lavalamp MHL SDDM Theme..."
 echo "Theme directory: ${THEME_DIR}"
 echo ""
 
-# Check if sddm-greeter is available
-if ! command -v sddm-greeter &> /dev/null; then
+# Detect SDDM greeter binary (Qt 6 renamed it to sddm-greeter-qt6)
+if command -v sddm-greeter-qt6 &> /dev/null; then
+    GREETER_BIN="sddm-greeter-qt6"
+elif command -v sddm-greeter &> /dev/null; then
+    GREETER_BIN="sddm-greeter"
+else
     echo "Error: sddm-greeter not found. Please install SDDM."
     exit 1
 fi
 
 # Test with default resolution
-echo "Starting SDDM theme test..."
+echo "Starting SDDM theme test (using ${GREETER_BIN})..."
 echo "Press Ctrl+C to exit the test."
 echo ""
 
 # Run the test
-sddm-greeter --test-mode --theme .
+${GREETER_BIN} --test-mode --theme .
 
 echo ""
 echo "Theme test completed."

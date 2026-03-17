@@ -1,6 +1,15 @@
 #!/bin/bash
 
 #==============================================================================
+#
+# Lava Lamp MHL: SDDM dynamic login theme
+#
+# @author    Marcin Orlowski <mail (#) marcinOrlowski (.) com>
+# @copyright 2025-2026 Marcin Orlowski
+# @license   http://www.opensource.org/licenses/mit-license.php MIT
+# @link      https://github.com/MarcinOrlowski/sddm-lavalamp-mhl
+#
+#==============================================================================
 # SDDM Lava Lamp MHL Theme - Debian Package Builder
 #==============================================================================
 #
@@ -23,10 +32,10 @@
 #   ./build-deb-package.sh
 #
 # OUTPUT:
-#   Creates sddm-theme-lavalamp-mhl_1.0.0_all.deb in the current directory
+#   Creates sddm-theme-lavalamp-mhl_2.0.0_all.deb in the current directory
 #
 # PACKAGE INSTALLATION:
-#   sudo dpkg -i sddm-theme-lavalamp-mhl_1.0.0_all.deb
+#   sudo dpkg -i sddm-theme-lavalamp-mhl_2.0.0_all.deb
 #   sudo apt-get install -f  # Fix any dependency issues
 #
 # PACKAGE REMOVAL:

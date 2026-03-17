@@ -1,10 +1,10 @@
-import QtQuick 2.15
+import QtQuick
 
 /**
  * Lava Lamp MHL: SDDM dynamic login theme
  *
  * @author    Marcin Orlowski <mail (#) marcinOrlowski (.) com>
- * @copyright 2025 Marcin Orlowski
+ * @copyright 2025-2026 Marcin Orlowski
  * @license   http://www.opensource.org/licenses/mit-license.php MIT
  * @link      https://github.com/MarcinOrlowski/sddm-lavalamp-mhl
  */
@@ -12,11 +12,12 @@ import QtQuick 2.15
 Rectangle {
     id: button
 
+    property QtObject themeConfig
     property alias text: buttonText.text
     property alias font: buttonText.font
-    property string primaryColor: "#8B4513"
-    property string secondaryColor: "#FF6B35"
-    property string textColor: "#FFE4CC"
+    property string primaryColor: themeConfig.uiPrimaryColor
+    property string secondaryColor: themeConfig.uiSecondaryColor
+    property string textColor: themeConfig.uiTextColor
     signal clicked
 
     width: 100
@@ -69,7 +70,7 @@ Rectangle {
         anchors.centerIn: parent
         color: button.hovered ? Qt.lighter(textColor, 1.2) : textColor
         font.pixelSize: 14
-        font.family: "Arial"
+        font.family: themeConfig.uiFont
     }
 
     // Focus indicator

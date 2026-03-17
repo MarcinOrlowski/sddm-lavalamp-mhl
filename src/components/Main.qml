@@ -1,14 +1,13 @@
-import QtQuick 2.15
-import SddmComponents 2.0
-import QtQuick.VirtualKeyboard 2.4
-import QtGraphicalEffects 1.15
-import "../shaders"
+import QtQuick
+import SddmComponents
+import QtQuick.VirtualKeyboard
+import Qt5Compat.GraphicalEffects
 
 /**
  * Lava Lamp MHL: SDDM dynamic login theme
  *
  * @author    Marcin Orlowski <mail (#) marcinOrlowski (.) com>
- * @copyright 2025 Marcin Orlowski
+ * @copyright 2025-2026 Marcin Orlowski
  * @license   http://www.opensource.org/licenses/mit-license.php MIT
  * @link      https://github.com/MarcinOrlowski/sddm-lavalamp-mhl
  */
@@ -20,6 +19,100 @@ Rectangle {
 
     // Hide mouse cursor when UI is hidden
     property bool shouldHideCursor: themeConfig.uiAutoHide && !uiVisible
+
+    // Random seed for metaball initial positions (set once at startup)
+    property real metaballRandomSeed: Math.random() * 10000.0
+
+    // --- CPU-side metaball position computation ---
+
+    // Number of mat4 uniforms needed to pack all metaballs (4 per mat4)
+    readonly property int metaballMatCount: Math.ceil(simulationConfig.metaballCount / 4)
+
+    function fract(x) {
+        return x - Math.floor(x);
+    }
+
+    function computeMetaballPositions(time, randomSeed, count, resW, resH, minSize, maxSize, minSpeed, maxSpeed, vBias, hScale) {
+        var positions = [];
+        for (var i = 0; i < count; i++) {
+            var seed = (i + randomSeed) * 12.9898;
+            var randomX = fract(Math.sin(seed) * 43758.5453);
+            var randomY = fract(Math.sin(seed * 1.618) * 43758.5453);
+            var randomVX = fract(Math.sin(seed * 2.718) * 43758.5453);
+            var randomVY = fract(Math.sin(seed * 3.141) * 43758.5453);
+            var randomR = fract(Math.sin(seed * 1.414) * 43758.5453);
+            var randomSpd = fract(Math.sin(seed * 2.236) * 43758.5453);
+
+            var radius = randomR * (maxSize - minSize) + minSize;
+            var speed = randomSpd * (maxSpeed - minSpeed) + minSpeed;
+            var vx = (randomVX - 0.5) * 2.0 * speed * hScale;
+            var vy = (randomVY - 0.5) * 2.0 * speed * vBias;
+
+            var startX = randomX * (resW - 2.0 * radius) + radius;
+            var startY = randomY * (resH - 2.0 * radius) + radius;
+
+            var x = startX + vx * time;
+            var y = startY + vy * time;
+
+            // Bouncing boundaries
+            var leftBound = -radius;
+            var rightBound = resW + radius;
+            var topBound = -radius;
+            var bottomBound = resH + radius;
+
+            var bounceWidth = rightBound - leftBound;
+            var bounceHeight = bottomBound - topBound;
+
+            // X axis bounce
+            var relativeX = x - leftBound;
+            var bounceCount = Math.floor(relativeX / bounceWidth);
+            var posInCycle = relativeX - bounceCount * bounceWidth;
+            if (bounceCount % 2 === 0) {
+                x = leftBound + posInCycle;
+            } else {
+                x = leftBound + bounceWidth - posInCycle;
+            }
+
+            // Y axis bounce
+            var relativeY = y - topBound;
+            bounceCount = Math.floor(relativeY / bounceHeight);
+            posInCycle = relativeY - bounceCount * bounceHeight;
+            if (bounceCount % 2 === 0) {
+                y = topBound + posInCycle;
+            } else {
+                y = topBound + bounceHeight - posInCycle;
+            }
+
+            positions.push({ x: x, y: y, r: radius });
+        }
+        return positions;
+    }
+
+    function packMetaballsToMatrices(positions, matCount) {
+        var matrices = [];
+        for (var m = 0; m < matCount; m++) {
+            var xs = [0, 0, 0, 0];
+            var ys = [0, 0, 0, 0];
+            var rs = [0, 0, 0, 0];
+            for (var c = 0; c < 4; c++) {
+                var idx = m * 4 + c;
+                if (idx < positions.length) {
+                    xs[c] = positions[idx].x;
+                    ys[c] = positions[idx].y;
+                    rs[c] = positions[idx].r;
+                }
+            }
+            // Row-major in QML; GLSL mat4[col] accesses columns.
+            // Qt transposes, so rows here become columns in GLSL.
+            matrices.push(Qt.matrix4x4(
+                xs[0], xs[1], xs[2], xs[3],
+                ys[0], ys[1], ys[2], ys[3],
+                rs[0], rs[1], rs[2], rs[3],
+                0, 0, 0, 0
+            ));
+        }
+        return matrices;
+    }
 
     TextConstants { id: textConstants }
 
@@ -46,6 +139,7 @@ Rectangle {
         readonly property string clockFont: "Arial"
         readonly property string uiFont: "Arial"
         readonly property real formOpacity: 0.85
+        readonly property bool debugAlwaysShowSessionSelector: false
     }
 
     // Visual themes (colors and rendering only)
@@ -85,13 +179,13 @@ Rectangle {
         }
 
         readonly property QtObject ocean: QtObject {
-            readonly property string gradientType: "vertical"
+            readonly property string gradientType: "corners"
             readonly property string gradientColor1: "#0080FF"
             readonly property string gradientColor2: "#004080"
             readonly property string gradientColor3: "#00FFFF"
             readonly property string gradientColor4: "#0080FF"
             readonly property bool backgroundGradientEnabled: true
-            readonly property string backgroundGradientType: "vertical"
+            readonly property string backgroundGradientType: "corners"
             readonly property string backgroundColor1: "#0a1a2a"
             readonly property string backgroundColor2: "#051020"
             readonly property string backgroundColor3: "#0a1a2a"
@@ -119,13 +213,13 @@ Rectangle {
         }
 
         readonly property QtObject forest: QtObject {
-            readonly property string gradientType: "vertical"
+            readonly property string gradientType: "corners"
             readonly property string gradientColor1: "#80FF80"
             readonly property string gradientColor2: "#006600"
             readonly property string gradientColor3: "#CCFF80"
             readonly property string gradientColor4: "#408040"
             readonly property bool backgroundGradientEnabled: true
-            readonly property string backgroundGradientType: "vertical"
+            readonly property string backgroundGradientType: "corners"
             readonly property string backgroundColor1: "#1a2a1a"
             readonly property string backgroundColor2: "#0f1f0f"
             readonly property string backgroundColor3: "#1a2a1a"
@@ -184,6 +278,21 @@ Rectangle {
         console.log("Theme changed to:", currentTheme)
     }
 
+    // Gradient mode constants  
+    readonly property int gradientModeVertical: 0
+    readonly property int gradientModeCorners: 1
+    readonly property int gradientModeRainbow: 2
+
+    // Gradient mode mapping function
+    function getGradientMode(gradientType) {
+        switch(gradientType) {
+            case "vertical": return gradientModeVertical
+            case "corners": return gradientModeCorners  
+            case "rainbow": return gradientModeRainbow
+            default: return gradientModeRainbow    // fallback to rainbow
+        }
+    }
+
     // Centralized configuration combining simulation and visual theme
     readonly property QtObject themeConfig: QtObject {
         // Simulation parameters (global, not theme-specific)
@@ -208,6 +317,7 @@ Rectangle {
         readonly property string clockFont: simulationConfig.clockFont
         readonly property string uiFont: simulationConfig.uiFont
         readonly property real formOpacity: simulationConfig.formOpacity
+        readonly property bool debugAlwaysShowSessionSelector: simulationConfig.debugAlwaysShowSessionSelector
 
         // Visual properties (theme-specific)
         readonly property string iconColor: activeTheme.iconColor
@@ -268,6 +378,15 @@ Rectangle {
         readonly property var uiSecondaryColorRgb: hexToRgb(uiSecondaryColor)
         readonly property var uiTextColorRgb: hexToRgb(uiTextColor)
         readonly property var uiBackgroundColorRgb: hexToRgb(uiBackgroundColor)
+
+        // Gradient mode values for shaders
+        readonly property int gradientModeValue: getGradientMode(activeTheme.gradientType)
+        readonly property int backgroundGradientModeValue: getGradientMode(activeTheme.backgroundGradientType)
+
+        // Debug gradient modes
+        Component.onCompleted: {
+            console.log("Theme:", currentTheme, "gradientType:", activeTheme.gradientType, "→ mode:", gradientModeValue)
+        }
     }
 
     // Dynamic screen dimensions - uses primary screen geometry with fallback
@@ -333,18 +452,9 @@ Rectangle {
         nextControl.forceActiveFocus(Qt.TabFocusReason)
     }
 
-    // Shader components
-    MetaballsVertexShader {
-        id: vertexShaderSource
-    }
-
-    MetaballsFragmentShader {
-        id: fragmentShaderSource
-    }
-
-    BackgroundGradientShader {
-        id: backgroundShaderSource
-    }
+    // Shader file paths (pre-compiled .qsb for Qt 6)
+    readonly property string vertexShaderPath: Qt.resolvedUrl("../shaders/metaballs.vert.qsb")
+    readonly property string metaballsShaderPath: Qt.resolvedUrl("../shaders/metaballs.frag.qsb")
 
     function resetHideTimer() {
         if (themeConfig.uiAutoHide) {
@@ -416,69 +526,129 @@ Rectangle {
         }
     }
 
-    // Background gradient (behind metaballs) - reuses same gradient logic as metaballs
-    ShaderEffect {
+    // Fallback message when shaders are not supported
+    Rectangle {
+        id: shaderFallback
         anchors.fill: parent
-        visible: themeConfig.backgroundGradientEnabled
+        color: "#4a1a1a"
+        visible: metaballShader.status === ShaderEffect.Error
 
-        property size resolution: Qt.size(container.width, container.height)
-        property vector3d baseColor: Qt.vector3d(themeConfig.metaballBaseColorR, themeConfig.metaballBaseColorG, themeConfig.metaballBaseColorB)
-        property vector3d gradientColor1: Qt.vector3d(themeConfig.backgroundColor1Rgb.r, themeConfig.backgroundColor1Rgb.g, themeConfig.backgroundColor1Rgb.b)
-        property vector3d gradientColor2: Qt.vector3d(themeConfig.backgroundColor2Rgb.r, themeConfig.backgroundColor2Rgb.g, themeConfig.backgroundColor2Rgb.b)
-        property vector3d gradientColor3: Qt.vector3d(themeConfig.backgroundColor3Rgb.r, themeConfig.backgroundColor3Rgb.g, themeConfig.backgroundColor3Rgb.b)
-        property vector3d gradientColor4: Qt.vector3d(themeConfig.backgroundColor4Rgb.r, themeConfig.backgroundColor4Rgb.g, themeConfig.backgroundColor4Rgb.b)
+        Row {
+            anchors.horizontalCenter: parent.horizontalCenter
+            anchors.top: parent.top
+            anchors.topMargin: 40
+            spacing: 16
 
-        vertexShader: vertexShaderSource.source
-        fragmentShader: backgroundShaderSource.source
+            Item {
+                width: 48
+                height: 48
+                anchors.verticalCenter: parent.verticalCenter
+                Image {
+                    id: errorIconLeft
+                    anchors.fill: parent
+                    source: "../assets/error.svgz"
+                    sourceSize.width: 48
+                    sourceSize.height: 48
+                    visible: false
+                }
+                ColorOverlay {
+                    anchors.fill: errorIconLeft
+                    source: errorIconLeft
+                    color: "#ffffff"
+                }
+            }
+
+            Text {
+                text: "No shader support detected. This theme requires GPU shader support to render."
+                color: "#ffffff"
+                font.family: themeConfig.uiFont
+                font.pixelSize: 32
+                anchors.verticalCenter: parent.verticalCenter
+            }
+
+            Item {
+                width: 48
+                height: 48
+                anchors.verticalCenter: parent.verticalCenter
+                Image {
+                    id: errorIconRight
+                    anchors.fill: parent
+                    source: "../assets/error.svgz"
+                    sourceSize.width: 48
+                    sourceSize.height: 48
+                    visible: false
+                }
+                ColorOverlay {
+                    anchors.fill: errorIconRight
+                    source: errorIconRight
+                    color: "#ffffff"
+                }
+            }
+        }
     }
 
-    // Metaballs background effect
+    // Metaballs + background gradient (single pass)
     ShaderEffect {
+        id: metaballShader
         anchors.fill: parent
+        visible: status !== ShaderEffect.Error
 
         property real time: 0
-        property real randomSeed: Math.random() * 10000.0  // Random seed for varied initial positions
-        // Direct binding to config values to ensure shader gets updated
-        property int numMetaballs: themeConfig.metaballCount
         property size resolution: Qt.size(container.width, container.height)
-        property real minSize: themeConfig.metaballMinSize * container.height
-        property real maxSize: themeConfig.metaballMaxSize * container.height
-        property real minSpeed: themeConfig.metaballMinSpeed
-        property real maxSpeed: themeConfig.metaballMaxSpeed
         property real threshold: themeConfig.metaballThreshold
         property vector3d baseColor: Qt.vector3d(themeConfig.metaballBaseColorR, themeConfig.metaballBaseColorG, themeConfig.metaballBaseColorB)
-        property string gradientType: themeConfig.gradientType
         property vector3d gradientColor1: Qt.vector3d(themeConfig.gradientColor1Rgb.r, themeConfig.gradientColor1Rgb.g, themeConfig.gradientColor1Rgb.b)
         property vector3d gradientColor2: Qt.vector3d(themeConfig.gradientColor2Rgb.r, themeConfig.gradientColor2Rgb.g, themeConfig.gradientColor2Rgb.b)
         property vector3d gradientColor3: Qt.vector3d(themeConfig.gradientColor3Rgb.r, themeConfig.gradientColor3Rgb.g, themeConfig.gradientColor3Rgb.b)
         property vector3d gradientColor4: Qt.vector3d(themeConfig.gradientColor4Rgb.r, themeConfig.gradientColor4Rgb.g, themeConfig.gradientColor4Rgb.b)
-        property real verticalBias: themeConfig.verticalBias
-        property real horizontalScale: themeConfig.horizontalScale
-        property bool backgroundGradientEnabled: themeConfig.backgroundGradientEnabled
+        property int gradientMode: themeConfig.gradientModeValue
+        property int backgroundGradientEnabled: themeConfig.backgroundGradientEnabled ? 1 : 0
         property vector3d backgroundGradientColor1: Qt.vector3d(themeConfig.backgroundColor1Rgb.r, themeConfig.backgroundColor1Rgb.g, themeConfig.backgroundColor1Rgb.b)
         property vector3d backgroundGradientColor2: Qt.vector3d(themeConfig.backgroundColor2Rgb.r, themeConfig.backgroundColor2Rgb.g, themeConfig.backgroundColor2Rgb.b)
         property vector3d backgroundGradientColor3: Qt.vector3d(themeConfig.backgroundColor3Rgb.r, themeConfig.backgroundColor3Rgb.g, themeConfig.backgroundColor3Rgb.b)
         property vector3d backgroundGradientColor4: Qt.vector3d(themeConfig.backgroundColor4Rgb.r, themeConfig.backgroundColor4Rgb.g, themeConfig.backgroundColor4Rgb.b)
-        property bool glowEffectEnabled: themeConfig.glowEffectEnabled
+        property int glowEffectEnabled: themeConfig.glowEffectEnabled ? 1 : 0
         property real glowIntensity: themeConfig.glowIntensity
         property real glowInnerThreshold: themeConfig.glowInnerThreshold
         property real glowMidThreshold: themeConfig.glowMidThreshold
         property real glowOuterThreshold: themeConfig.glowOuterThreshold
         property real glowMinFieldStrength: themeConfig.glowMinFieldStrength
 
-        // Debug output to verify values
-        // onNumMetaballsChanged: console.log("Shader numMetaballs changed to:", numMetaballs)
-        // onBaseColorChanged: console.log("Shader baseColor changed to:", baseColor)
+        // CPU-computed metaball position matrices (4 metaballs packed per mat4)
+        property matrix4x4 metaballData0: Qt.matrix4x4(1,0,0,0, 0,1,0,0, 0,0,1,0, 0,0,0,1)
+        property matrix4x4 metaballData1: Qt.matrix4x4(1,0,0,0, 0,1,0,0, 0,0,1,0, 0,0,0,1)
+        property matrix4x4 metaballData2: Qt.matrix4x4(1,0,0,0, 0,1,0,0, 0,0,1,0, 0,0,0,1)
+        property matrix4x4 metaballData3: Qt.matrix4x4(1,0,0,0, 0,1,0,0, 0,0,1,0, 0,0,0,1)
+        property matrix4x4 metaballData4: Qt.matrix4x4(1,0,0,0, 0,1,0,0, 0,0,1,0, 0,0,0,1)
+        property matrix4x4 metaballData5: Qt.matrix4x4(1,0,0,0, 0,1,0,0, 0,0,1,0, 0,0,0,1)
+        property matrix4x4 metaballData6: Qt.matrix4x4(1,0,0,0, 0,1,0,0, 0,0,1,0, 0,0,0,1)
+        property matrix4x4 metaballData7: Qt.matrix4x4(1,0,0,0, 0,1,0,0, 0,0,1,0, 0,0,0,1)
+        property matrix4x4 metaballData8: Qt.matrix4x4(1,0,0,0, 0,1,0,0, 0,0,1,0, 0,0,0,1)
 
-        // Force shader recompilation when key properties change
-        property string shaderKey: numMetaballs + "_" + minSize + "_" + maxSize
-
-        vertexShader: vertexShaderSource.source
-
-        fragmentShader: {
-            var shader = fragmentShaderSource.source.replace("{{MAX_METABALLS}}", themeConfig.metaballCount.toString())
-            return shader
+        onTimeChanged: {
+            var minSizePx = themeConfig.metaballMinSize * container.height;
+            var maxSizePx = themeConfig.metaballMaxSize * container.height;
+            var positions = computeMetaballPositions(
+                time, container.metaballRandomSeed, themeConfig.metaballCount,
+                container.width, container.height,
+                minSizePx, maxSizePx,
+                themeConfig.metaballMinSpeed, themeConfig.metaballMaxSpeed,
+                themeConfig.verticalBias, themeConfig.horizontalScale
+            );
+            var matrices = packMetaballsToMatrices(positions, container.metaballMatCount);
+            if (matrices.length > 0) metaballData0 = matrices[0];
+            if (matrices.length > 1) metaballData1 = matrices[1];
+            if (matrices.length > 2) metaballData2 = matrices[2];
+            if (matrices.length > 3) metaballData3 = matrices[3];
+            if (matrices.length > 4) metaballData4 = matrices[4];
+            if (matrices.length > 5) metaballData5 = matrices[5];
+            if (matrices.length > 6) metaballData6 = matrices[6];
+            if (matrices.length > 7) metaballData7 = matrices[7];
+            if (matrices.length > 8) metaballData8 = matrices[8];
         }
+
+        vertexShader: vertexShaderPath
+        fragmentShader: metaballsShaderPath
 
         // Use SequentialAnimation with very large duration to avoid resets
         SequentialAnimation on time {
@@ -678,7 +848,7 @@ Rectangle {
                     color: themeConfig.uiBackgroundColor
                     border.color: sessionMouseArea.containsMouse ? themeConfig.uiSecondaryColor : themeConfig.uiPrimaryColor
                     border.width: 2
-                    visible: sessionModel.count > 1
+                    visible: themeConfig.debugAlwaysShowSessionSelector || sessionModel.count > 1
 
                     property alias model: sessionListView.model
                     property alias index: sessionListView.currentIndex
@@ -689,9 +859,9 @@ Rectangle {
                         anchors.left: parent.left
                         anchors.leftMargin: 10
                         anchors.verticalCenter: parent.verticalCenter
-                        color: "#E8F0FF"
+                        color: themeConfig.uiTextColor
                         font.pixelSize: 14
-                        font.family: "Arial"
+                        font.family: themeConfig.uiFont
                         text: sessionListView.currentItem ? sessionListView.currentItem.itemText : ""
                     }
 
@@ -699,7 +869,7 @@ Rectangle {
                         anchors.right: parent.right
                         anchors.rightMargin: 10
                         anchors.verticalCenter: parent.verticalCenter
-                        color: "#B8D0FF"
+                        color: themeConfig.uiTextColor
                         font.pixelSize: 12
                         text: session.expanded ? "▲" : "▼"
                     }
@@ -738,7 +908,7 @@ Rectangle {
                             delegate: Rectangle {
                                 width: sessionListView.width
                                 height: 30
-                                color: delegateMouseArea.containsMouse ? "#2A3A5A" : "transparent"
+                                color: delegateMouseArea.containsMouse ? Qt.darker(themeConfig.uiPrimaryColor, 1.3) : "transparent"
 
                                 property string itemText: model.name || model.modelData || model
 
@@ -746,9 +916,9 @@ Rectangle {
                                     anchors.left: parent.left
                                     anchors.leftMargin: 10
                                     anchors.verticalCenter: parent.verticalCenter
-                                    color: "#E8F0FF"
+                                    color: themeConfig.uiTextColor
                                     font.pixelSize: 13
-                                    font.family: "Arial"
+                                    font.family: themeConfig.uiFont
                                     text: parent.itemText
                                 }
 
@@ -784,6 +954,7 @@ Rectangle {
 
                 CustomButton {
                     id: loginButton
+                    themeConfig: container.themeConfig
                     text: textConstants.login || "Login"
                     width: 120
                     height: 40
@@ -828,6 +999,7 @@ Rectangle {
 
         CustomButton {
             id: suspendButton
+            themeConfig: container.themeConfig
             text: textConstants.suspend || "Sleep"
             width: 80
             height: 35
@@ -840,6 +1012,7 @@ Rectangle {
 
         CustomButton {
             id: hibernateButton
+            themeConfig: container.themeConfig
             text: textConstants.hibernate || "Hibernate"
             width: 90
             height: 35
@@ -852,6 +1025,7 @@ Rectangle {
 
         CustomButton {
             id: shutdownButton
+            themeConfig: container.themeConfig
             text: textConstants.shutdown || "Shutdown"
             width: 100
             height: 35
@@ -864,6 +1038,7 @@ Rectangle {
 
         CustomButton {
             id: rebootButton
+            themeConfig: container.themeConfig
             text: textConstants.reboot || "Reboot"
             width: 80
             height: 35
