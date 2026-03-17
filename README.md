@@ -20,6 +20,8 @@ classic [lava lamp](https://wikipedia.org/wiki/Lava_lamp). It features a mesmeri
 colorful blobs that move and change shape, creating a relaxing and soothing visual effect. The theme
 is designed to be visually appealing and to provide a unique and engaging user experience.
 
+See [Installation](docs/README.md) dociment for theme installation guides.
+
 ## Themes
 
 Comes in multiple color themes to suit your liking.
