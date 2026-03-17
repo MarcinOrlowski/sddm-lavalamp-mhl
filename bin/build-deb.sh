@@ -133,8 +133,8 @@ Version: ${VERSION}
 Section: kde
 Priority: optional
 Architecture: ${ARCH}
-Depends: plasma-framework, plasma-workspace
-Recommends: desktop-base (>= 9.0.0~), sddm
+Depends: sddm, qml6-module-qt5compat-graphicaleffects, qml6-module-qtquick-virtualkeyboard
+Recommends: desktop-base (>= 9.0.0~)
 Provides: sddm-theme
 Maintainer: ${MAINTAINER}
 Description: ${DESCRIPTION}
