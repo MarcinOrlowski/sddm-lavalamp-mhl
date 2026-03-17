@@ -13,23 +13,9 @@ See [Installation](docs/README.md) document for theme installation guides.
 
 Comes in multiple color themes to suit your liking: Heat, Ocean, Forest, Sunset, Neon, Arctic, Citrus
 and Crimson. You can always change the visible theme at runtime by using "dice" icon located in 
-upper-left corner of your screen. Some of the themese are previewed below.
+upper-left corner of your screen.
 
-### Heat
-
-![Heat](img/preview-heat.webp)
-
-### Ocean
-
-![Ocean](img/preview-ocean.webp)
-
-### Forest
-
-![Forest](img/preview-forest.webp)
-
-### Crimson
-
-![Crimson](img/preview-crimson.webp)
+![Themes](img/themes.webp)
 
 ## Configuration
 
