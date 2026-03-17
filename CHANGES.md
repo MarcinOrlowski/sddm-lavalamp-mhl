@@ -4,6 +4,8 @@
 - Added theme name label next to the theme switcher button.
 - Added new color themes: Sunset, Neon, Arctic, Citrus, Crimson.
 - Fixed `test-virtual-display` helper always going full screen on Wayland.
+- Corrected theme version not showing proper version on the theme screen.
+- Removed debug console logging from theme code.
 
 ## v2.0.0 (2026-03-17)
 - Ported to Plasam 6 (dropped Plasma 5 completely).
