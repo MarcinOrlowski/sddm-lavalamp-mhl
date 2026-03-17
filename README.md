@@ -11,7 +11,9 @@ See [Installation](docs/README.md) document for theme installation guides.
 
 ## Themes
 
-Comes in multiple color themes to suit your liking.
+Comes in multiple color themes to suit your liking and you can always toggle the visible theme
+at runtime by using "dice" icon located in upper-left corner of your screen. Some of the 
+themese are previewed below.
 
 ### Heat
 
