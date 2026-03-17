@@ -2,6 +2,7 @@
 
 ## @dev (TBD)
 - Ported to Plasam 6 (dropped Plasma 5 completely).
+- Add distance culling to skip far-away metaballs in fragment shader.
 - Refactored metaball math, eliminating redundant trig calls and massively speeding all up.
 - Made ComboBox component colors and fonts configurable with theme system.
 - Made login and power buttons adapt to active theme colors.
