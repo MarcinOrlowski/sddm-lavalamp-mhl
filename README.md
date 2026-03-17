@@ -17,19 +17,19 @@ upper-left corner of your screen. Some of the themese are previewed below.
 
 ### Heat
 
-![Lava Lamp MHL Style Heat](img/preview-heat.webp)
+![Heat](img/preview-heat.webp)
 
 ### Ocean
 
-![Lava Lamp MHL Style Ocean](img/preview-ocean.webp)
+![Ocean](img/preview-ocean.webp)
 
 ### Forest
 
-![Lava Lamp MHL Style Forest](img/preview-forest.webp)
+![Forest](img/preview-forest.webp)
 
 ### Crimson
 
-![Lava Lamp MHL Style Forest](img/preview-forest.webp)
+![Crimson](img/preview-crimson.webp)
 
 ## Configuration
 
