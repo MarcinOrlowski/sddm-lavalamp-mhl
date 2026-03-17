@@ -11,7 +11,6 @@
 - Added debug option to always show session selector.
 - Replaced gradient inference with explicit gradient mode system.
 
-
 ## v1.0.1 (2025-08-06)
 - Code cleanup.
 - Improved code docs.
