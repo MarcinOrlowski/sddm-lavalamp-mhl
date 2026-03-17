@@ -131,20 +131,19 @@ void main() {
         }
     }
 
-    // Background gradient color (computed once, used in all fallback paths)
+    // Gradient colors computed once, reused in all paths
     vec3 bgColor = backgroundGradientEnabled != 0 ?
         calculateBackgroundGradientColor(x, y) :
         vec3(0.0, 0.0, 0.0);
+    vec3 colorBase = calculateGradientColor(x, y);
 
     if (glowEffectEnabled != 0) {
         float fieldStrength = min(1.0, sum * glowIntensity / 10.0);
 
         if (sum >= threshold) {
-            vec3 colorBase = calculateGradientColor(x, y);
             fragColor = vec4(colorBase, 1.0) * qt_Opacity;
         }
         else if (fieldStrength > glowMinFieldStrength) {
-            vec3 colorBase = calculateGradientColor(x, y);
             vec3 glowColor = vec3(0.0);
             float alpha = 1.0;
 
@@ -176,7 +175,6 @@ void main() {
         }
     } else {
         if (sum >= threshold) {
-            vec3 colorBase = calculateGradientColor(x, y);
             float fade = max(0.0, 1.0 - (sum - threshold) * 100.0);
             vec3 finalColor = mix(colorBase, bgColor, fade);
             fragColor = vec4(finalColor, 1.0) * qt_Opacity;
