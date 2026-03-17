@@ -14,6 +14,7 @@
 - Added debug option to always show session selector.
 - Replaced gradient inference with explicit gradient mode system.
 - Hoisted redundant gradient calculations out of glow branch paths in fragment shader.
+- Added runtime shader support detection with fallback message for unsupported hardware.
 
 ## v1.0.1 (2025-08-06)
 - Code cleanup.
