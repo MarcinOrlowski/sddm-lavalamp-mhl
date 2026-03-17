@@ -13,6 +13,7 @@
 - Added new project's artork and logo.
 - Added debug option to always show session selector.
 - Replaced gradient inference with explicit gradient mode system.
+- Hoisted redundant gradient calculations out of glow branch paths in fragment shader.
 
 ## v1.0.1 (2025-08-06)
 - Code cleanup.
