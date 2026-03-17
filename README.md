@@ -1,13 +1,16 @@
-![Lava Lamp MHL Logo](img/logo.svg)
+![Lava Lamp MHL Logo](img/logo.wepb)
 
 # Lava Lamp animated SDDM theme
 
-- [What is it?](#what-is-it)
-- [Installation](docs/README.md)
-- [Configuration](#configuration)
-- [License](#license)
-- [Development](docs/dev.md)
-- [Changelog](CHANGES.md)
+- [Lava Lamp animated SDDM theme](#lava-lamp-animated-sddm-theme)
+  - [What is it?](#what-is-it)
+    - [Themes](#themes)
+      - [Heat](#heat)
+      - [Ocean](#ocean)
+      - [Forest](#forest)
+  - [Configuration](#configuration)
+  - [Feedback](#feedback)
+  - [License](#license)
 
 ______________________________________________________________________
 
@@ -50,7 +53,7 @@ to [GitHub Issues](https://github.com/MarcinOrlowski/sddm-lavalamp-mhl/issues) p
 
 ## License
 
-- Written and copyrighted ©2025 by Marcin Orlowski <mail (#) MarcinOrlowski (.) com>
+- Written and copyrighted ©2025-2026 by Marcin Orlowski <mail (#) MarcinOrlowski (.) com>
 - Lava Lamp MHL is open-source software licensed under
   the [MIT license](http://opensource.org/licenses/MIT)
 - SVG icons from: https://www.svgrepo.com/

@@ -13,7 +13,7 @@
 #   bin/build-zip-package.sh
 #
 # OUTPUT:
-#   Creates sddm-theme-lavalamp-mhl_1.0.0_all.zip in the current directory
+#   Creates sddm-theme-lavalamp-mhl_2.0.0_all.zip in the current directory
 #
 #==============================================================================
 

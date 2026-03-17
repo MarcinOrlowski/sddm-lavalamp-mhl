@@ -7,7 +7,7 @@ import Qt5Compat.GraphicalEffects
  * Lava Lamp MHL: SDDM dynamic login theme
  *
  * @author    Marcin Orlowski <mail (#) marcinOrlowski (.) com>
- * @copyright 2025 Marcin Orlowski
+ * @copyright 2025-2026 Marcin Orlowski
  * @license   http://www.opensource.org/licenses/mit-license.php MIT
  * @link      https://github.com/MarcinOrlowski/sddm-lavalamp-mhl
  */

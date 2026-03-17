@@ -1,5 +1,14 @@
 #version 440
 
+/**
+ * Lava Lamp MHL: SDDM dynamic login theme
+ *
+ * @author    Marcin Orlowski <mail (#) marcinOrlowski (.) com>
+ * @copyright 2025-2026 Marcin Orlowski
+ * @license   http://www.opensource.org/licenses/mit-license.php MIT
+ * @link      https://github.com/MarcinOrlowski/sddm-lavalamp-mhl
+ */
+
 layout(location = 0) in vec2 qt_TexCoord0;
 layout(location = 0) out vec4 fragColor;
 
