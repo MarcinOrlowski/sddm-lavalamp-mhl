@@ -76,7 +76,7 @@ echo "Close the window or press Ctrl+C to exit."
 echo ""
 
 # Run SDDM greeter in the virtual display
-DISPLAY=:$DISPLAY_NUM ${GREETER_BIN} --test-mode --theme "$THEME_DIR" &
+env DISPLAY=":$DISPLAY_NUM" QT_QPA_PLATFORM=xcb QT_SCALE_FACTOR=1 QT_AUTO_SCREEN_SCALE_FACTOR=0 QT_ENABLE_HIGHDPI_SCALING=0 ${GREETER_BIN} --test-mode --theme "$THEME_DIR" &
 GREETER_PID=$!
 
 # Wait for either process to exit
