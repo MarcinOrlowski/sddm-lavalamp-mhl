@@ -54,6 +54,10 @@ fi
 
 echo "Version read from metadata: $VERSION"
 
+# Inject version into theme.conf so QML can read it at runtime
+THEME_CONF="${SOURCE_DIR}/theme.conf"
+sed -i "s/^version=.*/version=${VERSION}/" "${THEME_CONF}"
+
 # Directories
 THEME_INSTALL_DIR="${BUILD_DIR}/lavalamp-mhl"
 

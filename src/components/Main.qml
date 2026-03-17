@@ -20,6 +20,9 @@ Rectangle {
     // Hide mouse cursor when UI is hidden
     property bool shouldHideCursor: themeConfig.uiAutoHide && !uiVisible
 
+    // Theme version from theme.conf
+    property string themeVersion: config.stringValue("version") || ""
+
     // Random seed for metaball initial positions (set once at startup)
     property real metaballRandomSeed: Math.random() * 10000.0
 
@@ -424,7 +427,6 @@ Rectangle {
         if (!configTheme || availableThemes.indexOf(configTheme) === -1) {
             // Invalid or empty theme - pick random one
             var randomIndex = Math.floor(Math.random() * availableThemes.length)
-            console.log("Invalid/empty theme '" + configTheme + "', randomly selected:", availableThemes[randomIndex])
             return availableThemes[randomIndex]
         }
         return configTheme
@@ -460,7 +462,6 @@ Rectangle {
         var currentIndex = availableThemes.indexOf(currentTheme)
         var nextIndex = (currentIndex + 1) % availableThemes.length
         currentTheme = availableThemes[nextIndex]
-        console.log("Theme changed to:", currentTheme)
     }
 
     // Gradient mode constants  
@@ -569,10 +570,6 @@ Rectangle {
         readonly property int gradientModeValue: getGradientMode(activeTheme.gradientType)
         readonly property int backgroundGradientModeValue: getGradientMode(activeTheme.backgroundGradientType)
 
-        // Debug gradient modes
-        Component.onCompleted: {
-            console.log("Theme:", currentTheme, "gradientType:", activeTheme.gradientType, "→ mode:", gradientModeValue)
-        }
     }
 
     // Dynamic screen dimensions - uses primary screen geometry with fallback
@@ -1629,7 +1626,7 @@ Rectangle {
                 anchors.verticalCenter: parent.verticalCenter
 
                 Text {
-                    text: "Lava Lamp MHL v1.0.0"
+                    text: "Lava Lamp MHL v" + themeVersion
                     color: themeConfig.copyrightTextColor
                     font.pixelSize: 18
                     font.bold: true
@@ -1648,19 +1645,6 @@ Rectangle {
 
     // Initialize when component is ready
     Component.onCompleted: {
-        console.log("Screen dimensions:", width, "x", height)
-        if (screenModel) {
-            console.log("Primary screen index:", screenModel.primary)
-            console.log("Number of screens:", screenModel.count)
-            for (var i = 0; i < screenModel.count; i++) {
-                var geo = screenModel.geometry(i)
-                console.log("Screen", i, "geometry:", geo.x, geo.y, geo.width, "x", geo.height)
-            }
-        } else {
-            console.warn("screenModel not available, using fallback dimensions")
-        }
-
-
         // Set initial UI state based on config
         setInitialUIState()
 
