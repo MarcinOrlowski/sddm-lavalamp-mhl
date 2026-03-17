@@ -588,6 +588,7 @@ Rectangle {
     // Auto-hide UI properties
     property bool uiVisible: !themeConfig.uiHideOnStart  // Start hidden if configured
     property bool enableAnimations: true  // Enable animations
+    property bool hideCooldown: false  // Brief cooldown after hide to ignore spurious mouse events
 
     // Auto-focus when UI becomes visible
     onUiVisibleChanged: {
@@ -603,9 +604,19 @@ Rectangle {
         repeat: false
         onTriggered: {
             if (themeConfig.uiAutoHide) {
+                hideCooldown = true
                 uiVisible = false
+                hideCooldownTimer.start()
             }
         }
+    }
+
+    // Brief cooldown after hiding to ignore spurious mouse events from overlay appearing
+    Timer {
+        id: hideCooldownTimer
+        interval: 500
+        repeat: false
+        onTriggered: hideCooldown = false
     }
 
     // Activity tracking timer - clears focus after inactivity
@@ -654,6 +665,7 @@ Rectangle {
 
     function recordActivity() {
         if (themeConfig.uiAutoHide) {
+            if (hideCooldown) return
             uiVisible = true
             recentActivity = true
 
@@ -675,6 +687,7 @@ Rectangle {
 
     // Global mouse area to detect activity and handle focus clearing
     MouseArea {
+        id: globalMouseArea
         anchors.fill: parent
         hoverEnabled: true
         cursorShape: container.shouldHideCursor ? Qt.BlankCursor : Qt.ArrowCursor
