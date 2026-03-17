@@ -245,6 +245,40 @@ Rectangle {
             readonly property real glowOuterThreshold: 0.05
             readonly property real glowMinFieldStrength: 0.005
         }
+
+        readonly property QtObject sunset: QtObject {
+            readonly property string gradientType: "corners"
+            readonly property string gradientColor1: "#FF6B9D"
+            readonly property string gradientColor2: "#C44DFF"
+            readonly property string gradientColor3: "#FF8C42"
+            readonly property string gradientColor4: "#8B2FC9"
+            readonly property bool backgroundGradientEnabled: true
+            readonly property string backgroundGradientType: "corners"
+            readonly property string backgroundColor1: "#2a1030"
+            readonly property string backgroundColor2: "#1a0820"
+            readonly property string backgroundColor3: "#2a1520"
+            readonly property string backgroundColor4: "#150818"
+            readonly property string iconColor: "#FF6B9D"
+            readonly property string suspendIconColor: "#FF6B9D"
+            readonly property string hibernateIconColor: "#C44DFF"
+            readonly property string shutdownIconColor: "#FF5555"
+            readonly property string rebootIconColor: "#FF8C42"
+            readonly property int clockFontSize: 90
+            readonly property string clockColor: "#FF8CAA"
+            readonly property string uiPrimaryColor: "#8B2FC9"
+            readonly property string uiSecondaryColor: "#C44DFF"
+            readonly property string uiTextColor: "#FFE0F0"
+            readonly property string uiBackgroundColor: "#1F0A2A"
+            readonly property string welcomeTextColor: "#FF6B9D"
+            readonly property string inputLabelColor: "#C080E0"
+            readonly property string copyrightTextColor: "#C0A0D0"
+            readonly property bool glowEffectEnabled: true
+            readonly property real glowIntensity: 2.5
+            readonly property real glowInnerThreshold: 0.7
+            readonly property real glowMidThreshold: 0.35
+            readonly property real glowOuterThreshold: 0.08
+            readonly property real glowMinFieldStrength: 0.008
+        }
     }
 
     // Theme cycling state
@@ -258,13 +292,19 @@ Rectangle {
         }
         return configTheme
     }
-    readonly property var availableThemes: ["heat", "ocean", "forest"]
+    readonly property var availableThemes: [
+        "heat",
+        "ocean",
+        "forest",
+        "sunset",
+    ]
 
     // Active theme selection
     readonly property QtObject activeTheme: {
         switch(currentTheme) {
             case "ocean": return themes.ocean
             case "forest": return themes.forest
+            case "sunset": return themes.sunset
             case "heat":
             default: return themes.heat
         }
