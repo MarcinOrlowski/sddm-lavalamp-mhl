@@ -1,6 +1,7 @@
 # Changelog
 
 ## v2.1.0 (TBD)
+- Added configurable orb count via `orbs` option in `theme.conf` (range: 16-70, default: 35).
 - Added theme name label next to the theme switcher button.
 - Added new color themes: Sunset, Neon, Arctic, Citrus, Crimson.
 - Fixed `test-virtual-display` helper always going full screen on Wayland.

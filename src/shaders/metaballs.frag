@@ -42,6 +42,7 @@ layout(std140, binding = 0) uniform buf {
     int gradientMode;
     int backgroundGradientEnabled;
     int glowEffectEnabled;
+    int metaballCount;
 
     // CPU-computed metaball positions packed into mat4s (4 metaballs per mat4)
     mat4 metaballData0;
@@ -53,6 +54,15 @@ layout(std140, binding = 0) uniform buf {
     mat4 metaballData6;
     mat4 metaballData7;
     mat4 metaballData8;
+    mat4 metaballData9;
+    mat4 metaballData10;
+    mat4 metaballData11;
+    mat4 metaballData12;
+    mat4 metaballData13;
+    mat4 metaballData14;
+    mat4 metaballData15;
+    mat4 metaballData16;
+    mat4 metaballData17;
 };
 
 // Calculate gradient color based on position and gradient mode
@@ -105,6 +115,15 @@ vec3 getMetaball(int index) {
     else if (matIdx == 6) col = metaballData6[colIdx];
     else if (matIdx == 7) col = metaballData7[colIdx];
     else if (matIdx == 8) col = metaballData8[colIdx];
+    else if (matIdx == 9) col = metaballData9[colIdx];
+    else if (matIdx == 10) col = metaballData10[colIdx];
+    else if (matIdx == 11) col = metaballData11[colIdx];
+    else if (matIdx == 12) col = metaballData12[colIdx];
+    else if (matIdx == 13) col = metaballData13[colIdx];
+    else if (matIdx == 14) col = metaballData14[colIdx];
+    else if (matIdx == 15) col = metaballData15[colIdx];
+    else if (matIdx == 16) col = metaballData16[colIdx];
+    else if (matIdx == 17) col = metaballData17[colIdx];
     return col.xyz;
 }
 
@@ -114,7 +133,7 @@ void main() {
 
     float sum = 0.0;
 
-    for (int i = 0; i < 35; i++) {
+    for (int i = 0; i < metaballCount; i++) {
         vec3 metaball = getMetaball(i);
         float dx = metaball.x - x;
         float dy = metaball.y - y;

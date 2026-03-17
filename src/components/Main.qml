@@ -123,9 +123,21 @@ Rectangle {
 
     TextConstants { id: textConstants }
 
+    // Orb count limits
+    readonly property int metaballCountMin: 16
+    readonly property int metaballCountDefault: 35
+    // Changing metaballCountMax requires matching updates:
+    //   1. Fragment shader (metaballs.frag): add/remove mat4 uniforms in the uniform buffer
+    //      and corresponding if/else branches in getMetaball()
+    //   2. ShaderEffect (below): add/remove metaballDataN properties and matrix assignments
+    //      in onTimeChanged
+    //   3. Rebuild .qsb shader: run bin/build-shaders.sh
+    //   Max mat4 count = ceil(metaballCountMax / 4)
+    readonly property int metaballCountMax: 70
+
     // Global simulation parameters (not theme-specific)
     readonly property QtObject simulationConfig: QtObject {
-        readonly property int metaballCount: 35
+        readonly property int metaballCount: Math.min(metaballCountMax, Math.max(metaballCountMin, parseInt(config.stringValue("orbs")) || metaballCountDefault))
         readonly property real metaballMinSize: 0.02
         readonly property real metaballMaxSize: 0.07
         readonly property real metaballMinSpeed: 50
@@ -813,6 +825,7 @@ Rectangle {
         property real glowMidThreshold: themeConfig.glowMidThreshold
         property real glowOuterThreshold: themeConfig.glowOuterThreshold
         property real glowMinFieldStrength: themeConfig.glowMinFieldStrength
+        property int metaballCount: themeConfig.metaballCount
 
         // CPU-computed metaball position matrices (4 metaballs packed per mat4)
         property matrix4x4 metaballData0: Qt.matrix4x4(1,0,0,0, 0,1,0,0, 0,0,1,0, 0,0,0,1)
@@ -824,6 +837,15 @@ Rectangle {
         property matrix4x4 metaballData6: Qt.matrix4x4(1,0,0,0, 0,1,0,0, 0,0,1,0, 0,0,0,1)
         property matrix4x4 metaballData7: Qt.matrix4x4(1,0,0,0, 0,1,0,0, 0,0,1,0, 0,0,0,1)
         property matrix4x4 metaballData8: Qt.matrix4x4(1,0,0,0, 0,1,0,0, 0,0,1,0, 0,0,0,1)
+        property matrix4x4 metaballData9: Qt.matrix4x4(1,0,0,0, 0,1,0,0, 0,0,1,0, 0,0,0,1)
+        property matrix4x4 metaballData10: Qt.matrix4x4(1,0,0,0, 0,1,0,0, 0,0,1,0, 0,0,0,1)
+        property matrix4x4 metaballData11: Qt.matrix4x4(1,0,0,0, 0,1,0,0, 0,0,1,0, 0,0,0,1)
+        property matrix4x4 metaballData12: Qt.matrix4x4(1,0,0,0, 0,1,0,0, 0,0,1,0, 0,0,0,1)
+        property matrix4x4 metaballData13: Qt.matrix4x4(1,0,0,0, 0,1,0,0, 0,0,1,0, 0,0,0,1)
+        property matrix4x4 metaballData14: Qt.matrix4x4(1,0,0,0, 0,1,0,0, 0,0,1,0, 0,0,0,1)
+        property matrix4x4 metaballData15: Qt.matrix4x4(1,0,0,0, 0,1,0,0, 0,0,1,0, 0,0,0,1)
+        property matrix4x4 metaballData16: Qt.matrix4x4(1,0,0,0, 0,1,0,0, 0,0,1,0, 0,0,0,1)
+        property matrix4x4 metaballData17: Qt.matrix4x4(1,0,0,0, 0,1,0,0, 0,0,1,0, 0,0,0,1)
 
         onTimeChanged: {
             var minSizePx = themeConfig.metaballMinSize * container.height;
@@ -845,6 +867,15 @@ Rectangle {
             if (matrices.length > 6) metaballData6 = matrices[6];
             if (matrices.length > 7) metaballData7 = matrices[7];
             if (matrices.length > 8) metaballData8 = matrices[8];
+            if (matrices.length > 9) metaballData9 = matrices[9];
+            if (matrices.length > 10) metaballData10 = matrices[10];
+            if (matrices.length > 11) metaballData11 = matrices[11];
+            if (matrices.length > 12) metaballData12 = matrices[12];
+            if (matrices.length > 13) metaballData13 = matrices[13];
+            if (matrices.length > 14) metaballData14 = matrices[14];
+            if (matrices.length > 15) metaballData15 = matrices[15];
+            if (matrices.length > 16) metaballData16 = matrices[16];
+            if (matrices.length > 17) metaballData17 = matrices[17];
         }
 
         vertexShader: vertexShaderPath
