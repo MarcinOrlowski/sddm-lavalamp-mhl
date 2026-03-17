@@ -1,0 +1,192 @@
+##################################################################################
+#
+# # PR Branch Sync Notifier (2/2) - Sync Validation
+#
+# Author: Marcin Orlowski <mail (#) marcinOrlowski (.) com>
+#
+###################################################################################
+#
+# This workflow ensures PR branches are in sync with their target branch before
+# allowing merge. It prevents merging PRs that are behind the target branch,
+# which could introduce conflicts or miss important changes.
+#
+# How it works:
+# - Uses git merge-base to find the common ancestor of PR and target branches
+# - Compares if the target branch HEAD is reachable from the PR branch
+# - Fails if the PR branch is behind (missing commits from target)
+#
+# Triggers:
+# 1. Pull request events: opened, reopened, synchronize
+# 2. Repository dispatch: pr-branch-sync-check (from pr-branch-sync-notifier.yml)
+#
+# The repository_dispatch trigger allows re-validation when the target branch
+# is updated (e.g., when another PR is merged to dev). The notifier workflow
+# dispatches events with PR metadata in the client_payload.
+#
+# Expected Behavior:
+# - PR created from outdated branch → check fails
+# - User clicks "Update branch" or rebases → new commits trigger workflow
+# - Target branch updated → notifier dispatches event → check re-runs
+# - Workflow runs again → check passes (branch is now in sync)
+#
+##################################################################################
+
+name: "PR Branch Sync Check"
+
+on:
+  pull_request:
+    types: [opened, reopened, synchronize]
+  repository_dispatch:
+    types: [pr-branch-sync-check]
+
+permissions:
+  pull-requests: read
+  contents: read
+  checks: write
+
+jobs:
+  check_branch_sync:
+    name: "Check Branch Sync"
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: "Determine trigger context"
+        id: context
+        uses: actions/github-script@v6
+        with:
+          script: |
+            const isDispatch = context.eventName === 'repository_dispatch';
+            console.log(`Trigger: ${context.eventName}`);
+
+            let headRef, baseRef, headSha, prNumber;
+            if (isDispatch) {
+              const payload = context.payload.client_payload;
+              headRef = payload.head_ref;
+              baseRef = payload.base_ref;
+              headSha = payload.head_sha;
+              prNumber = payload.pr_number;
+            } else {
+              headRef = context.payload.pull_request.head.ref;
+              baseRef = context.payload.pull_request.base.ref;
+              headSha = context.payload.pull_request.head.sha;
+              prNumber = context.payload.pull_request.number;
+            }
+            console.log(`PR #${prNumber}`);
+
+            console.log(`Head ref: ${headRef}`);
+            console.log(`Base ref: ${baseRef}`);
+            console.log(`Head SHA: ${headSha}`);
+
+            // Set outputs for subsequent steps
+            core.setOutput('head_ref', headRef);
+            core.setOutput('base_ref', baseRef);
+            core.setOutput('head_sha', headSha);
+            core.setOutput('pr_number', prNumber);
+            core.setOutput('is_dispatch', isDispatch);
+
+      # https://github.com/marketplace/actions/checkout
+      - name: "Checkout repository"
+        uses: actions/checkout@v4
+        with:
+          ref: ${{ steps.context.outputs.head_sha }}
+          fetch-depth: 0
+
+      - name: "Fetch target branch"
+        run: |
+          git fetch origin "${{ steps.context.outputs.base_ref }}:refs/remotes/origin/${{ steps.context.outputs.base_ref }}"
+
+      - name: "Check if PR branch is in sync with target"
+        uses: actions/github-script@v6
+        with:
+          script: |
+            const { execFileSync } = require('child_process');
+
+            // Use outputs from context step (works for both triggers)
+            const targetBranch = '${{ steps.context.outputs.base_ref }}';
+            const prBranch = '${{ steps.context.outputs.head_ref }}';
+            const headSha = '${{ steps.context.outputs.head_sha }}';
+            const prNumber = '${{ steps.context.outputs.pr_number }}';
+            const isDispatch = '${{ steps.context.outputs.is_dispatch }}' === 'true';
+
+            console.log(`PR branch: ${prBranch}`);
+            console.log(`Target branch: ${targetBranch}`);
+            console.log(`Is dispatch trigger: ${isDispatch}`);
+
+            // Helper function to report check status for dispatch triggers
+            async function reportCheckStatus(conclusion, title, summary) {
+              if (!isDispatch) return; // Only needed for dispatch triggers
+
+              try {
+                await github.rest.checks.create({
+                  owner: context.repo.owner,
+                  repo: context.repo.repo,
+                  name: 'PR Branch Sync Check',
+                  head_sha: headSha,
+                  status: 'completed',
+                  conclusion: conclusion,
+                  output: {
+                    title: title,
+                    summary: summary
+                  }
+                });
+                console.log(`Check run created on PR #${prNumber} with conclusion: ${conclusion}`);
+              } catch (error) {
+                console.error(`Failed to create check run: ${error.message}`);
+              }
+            }
+
+            try {
+              // Using execFileSync (no shell) to avoid command injection via branch names
+              // Get the merge-base (common ancestor)
+              const mergeBase = execFileSync(
+                'git', ['merge-base', `origin/${targetBranch}`, 'HEAD'],
+                { encoding: 'utf-8' }
+              ).trim();
+
+              // Get the target branch HEAD commit
+              const targetHead = execFileSync(
+                'git', ['rev-parse', `origin/${targetBranch}`],
+                { encoding: 'utf-8' }
+              ).trim();
+
+              console.log(`Merge base: ${mergeBase}`);
+              console.log(`Target HEAD: ${targetHead}`);
+
+              if (mergeBase === targetHead) {
+                await reportCheckStatus('success', 'Branch is in sync', 'PR branch contains all commits from the target branch.');
+                return;
+              }
+
+              // Check how many commits behind
+              const behindCount = execFileSync(
+                'git', ['rev-list', '--count', `${mergeBase}..origin/${targetBranch}`],
+                { encoding: 'utf-8' }
+              ).trim();
+
+              const errorMessage = '❌ PR branch is out of sync with target branch\n\n' +
+                '**Issue**: Your branch is missing commits from the target branch\n\n' +
+                `**Target branch**: \`${targetBranch}\`\n` +
+                `**Commits behind**: ${behindCount}\n\n` +
+                '**How to fix**:\n' +
+                '1. Click the "Update branch" button on this PR page, or\n' +
+                '2. Manually rebase your branch:\n' +
+                '   ```\n' +
+                `   git fetch origin ${targetBranch}\n` +
+                `   git rebase origin/${targetBranch}\n` +
+                '   git push --force-with-lease\n' +
+                '   ```\n\n' +
+                'After updating, this check will run again automatically.';
+
+              // Report failure via Checks API for dispatch triggers
+              await reportCheckStatus(
+                'failure',
+                `Branch is ${behindCount} commit(s) behind ${targetBranch}`,
+                errorMessage
+              );
+
+              core.setFailed(errorMessage);
+
+            } catch (error) {
+              await reportCheckStatus('failure', 'Check failed', `❌ Failed to check branch sync: ${error.message}`);
+              core.setFailed(`❌ Failed to check branch sync: ${error.message}`);
+            }
