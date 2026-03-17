@@ -181,6 +181,7 @@ Rectangle {
         readonly property real formOpacity: 0.85
         readonly property bool debugAlwaysShowSessionSelector: false
         readonly property bool showThemeName: true
+        readonly property int themeTransitionDuration: 1500
     }
 
     // Visual themes (colors and rendering only)
@@ -458,6 +459,38 @@ Rectangle {
         }
     }
 
+    // Color interpolation helpers for smooth theme transitions
+    function lerpColor(hex1, hex2, t) {
+        if (t >= 1.0) return hex2
+        if (t <= 0.0) return hex1
+        var c1 = themeConfig.hexToRgb(hex1)
+        var c2 = themeConfig.hexToRgb(hex2)
+        var r = Math.round((c1.r + (c2.r - c1.r) * t) * 255)
+        var g = Math.round((c1.g + (c2.g - c1.g) * t) * 255)
+        var b = Math.round((c1.b + (c2.b - c1.b) * t) * 255)
+        return "#" + r.toString(16).padStart(2, '0') + g.toString(16).padStart(2, '0') + b.toString(16).padStart(2, '0')
+    }
+
+    function lerpReal(a, b, t) {
+        if (t >= 1.0) return b
+        if (t <= 0.0) return a
+        return a + (b - a) * t
+    }
+
+    // Theme transition state
+    property QtObject previousTheme: null
+    property QtObject targetTheme: null
+    property real themeTransitionProgress: 1.0
+
+    NumberAnimation on themeTransitionProgress {
+        id: themeTransitionAnimation
+        from: 0.0
+        to: 1.0
+        duration: simulationConfig.themeTransitionDuration
+        easing.type: Easing.InOutQuad
+        running: false
+    }
+
     // Theme cycling state
     property string currentTheme: {
         var configTheme = config.stringValue("theme")
@@ -494,11 +527,13 @@ Rectangle {
         }
     }
 
-    // Theme cycling function
     function cycleTheme() {
+        previousTheme = activeTheme
         var currentIndex = availableThemes.indexOf(currentTheme)
         var nextIndex = (currentIndex + 1) % availableThemes.length
         currentTheme = availableThemes[nextIndex]
+        targetTheme = activeTheme
+        themeTransitionAnimation.restart()
     }
 
     // Gradient mode constants  
@@ -543,20 +578,6 @@ Rectangle {
         readonly property bool debugAlwaysShowSessionSelector: simulationConfig.debugAlwaysShowSessionSelector
         readonly property bool showThemeName: simulationConfig.showThemeName
 
-        // Visual properties (theme-specific)
-        readonly property string iconColor: activeTheme.iconColor
-        readonly property string suspendIconColor: activeTheme.suspendIconColor
-        readonly property string hibernateIconColor: activeTheme.hibernateIconColor
-        readonly property string shutdownIconColor: activeTheme.shutdownIconColor
-        readonly property string rebootIconColor: activeTheme.rebootIconColor
-        readonly property int clockFontSize: activeTheme.clockFontSize
-        readonly property string clockColor: activeTheme.clockColor
-        readonly property string gradientType: activeTheme.gradientType
-        readonly property string gradientColor1: activeTheme.gradientColor1
-        readonly property string gradientColor2: activeTheme.gradientColor2
-        readonly property string gradientColor3: activeTheme.gradientColor3
-        readonly property string gradientColor4: activeTheme.gradientColor4
-
         // Convert hex colors to RGB vectors for shader
         function hexToRgb(hex) {
             var result = /^#?([a-f\d]{2})([a-f\d]{2})([a-f\d]{2})$/i.exec(hex);
@@ -567,27 +588,49 @@ Rectangle {
             } : {r: 1.0, g: 1.0, b: 1.0};
         }
 
-        readonly property bool backgroundGradientEnabled: activeTheme.backgroundGradientEnabled
-        readonly property string backgroundGradientType: activeTheme.backgroundGradientType
-        readonly property string backgroundColor1: activeTheme.backgroundColor1
-        readonly property string backgroundColor2: activeTheme.backgroundColor2
-        readonly property string backgroundColor3: activeTheme.backgroundColor3
-        readonly property string backgroundColor4: activeTheme.backgroundColor4
-        readonly property bool glowEffectEnabled: activeTheme.glowEffectEnabled
-        readonly property real glowIntensity: activeTheme.glowIntensity
-        readonly property real glowInnerThreshold: activeTheme.glowInnerThreshold
-        readonly property real glowMidThreshold: activeTheme.glowMidThreshold
-        readonly property real glowOuterThreshold: activeTheme.glowOuterThreshold
-        readonly property real glowMinFieldStrength: activeTheme.glowMinFieldStrength
-        readonly property string uiPrimaryColor: activeTheme.uiPrimaryColor
-        readonly property string uiSecondaryColor: activeTheme.uiSecondaryColor
-        readonly property string uiTextColor: activeTheme.uiTextColor
-        readonly property string uiBackgroundColor: activeTheme.uiBackgroundColor
-        readonly property string welcomeTextColor: activeTheme.welcomeTextColor
-        readonly property string inputLabelColor: activeTheme.inputLabelColor
-        readonly property string copyrightTextColor: activeTheme.copyrightTextColor
+        // Shorthand for safe access to previous/target theme (null before Component.onCompleted)
+        property QtObject _prev: previousTheme || activeTheme
+        property QtObject _tgt: targetTheme || activeTheme
+        property real _t: themeTransitionProgress
 
-        // RGB conversions for colors
+        // Visual properties (theme-specific) — interpolated for smooth transitions
+        property string iconColor: lerpColor(_prev.iconColor, _tgt.iconColor, _t)
+        property string suspendIconColor: lerpColor(_prev.suspendIconColor, _tgt.suspendIconColor, _t)
+        property string hibernateIconColor: lerpColor(_prev.hibernateIconColor, _tgt.hibernateIconColor, _t)
+        property string shutdownIconColor: lerpColor(_prev.shutdownIconColor, _tgt.shutdownIconColor, _t)
+        property string rebootIconColor: lerpColor(_prev.rebootIconColor, _tgt.rebootIconColor, _t)
+        property string clockColor: lerpColor(_prev.clockColor, _tgt.clockColor, _t)
+        property string gradientColor1: lerpColor(_prev.gradientColor1, _tgt.gradientColor1, _t)
+        property string gradientColor2: lerpColor(_prev.gradientColor2, _tgt.gradientColor2, _t)
+        property string gradientColor3: lerpColor(_prev.gradientColor3, _tgt.gradientColor3, _t)
+        property string gradientColor4: lerpColor(_prev.gradientColor4, _tgt.gradientColor4, _t)
+        property string backgroundColor1: lerpColor(_prev.backgroundColor1, _tgt.backgroundColor1, _t)
+        property string backgroundColor2: lerpColor(_prev.backgroundColor2, _tgt.backgroundColor2, _t)
+        property string backgroundColor3: lerpColor(_prev.backgroundColor3, _tgt.backgroundColor3, _t)
+        property string backgroundColor4: lerpColor(_prev.backgroundColor4, _tgt.backgroundColor4, _t)
+        property string uiPrimaryColor: lerpColor(_prev.uiPrimaryColor, _tgt.uiPrimaryColor, _t)
+        property string uiSecondaryColor: lerpColor(_prev.uiSecondaryColor, _tgt.uiSecondaryColor, _t)
+        property string uiTextColor: lerpColor(_prev.uiTextColor, _tgt.uiTextColor, _t)
+        property string uiBackgroundColor: lerpColor(_prev.uiBackgroundColor, _tgt.uiBackgroundColor, _t)
+        property string welcomeTextColor: lerpColor(_prev.welcomeTextColor, _tgt.welcomeTextColor, _t)
+        property string inputLabelColor: lerpColor(_prev.inputLabelColor, _tgt.inputLabelColor, _t)
+        property string copyrightTextColor: lerpColor(_prev.copyrightTextColor, _tgt.copyrightTextColor, _t)
+
+        // Discrete properties — snap at transition midpoint
+        property int clockFontSize: _t < 0.5 ? _prev.clockFontSize : _tgt.clockFontSize
+        property string gradientType: _t < 0.5 ? _prev.gradientType : _tgt.gradientType
+        property bool backgroundGradientEnabled: _t < 0.5 ? _prev.backgroundGradientEnabled : _tgt.backgroundGradientEnabled
+        property string backgroundGradientType: _t < 0.5 ? _prev.backgroundGradientType : _tgt.backgroundGradientType
+        property bool glowEffectEnabled: _t < 0.5 ? _prev.glowEffectEnabled : _tgt.glowEffectEnabled
+
+        // Numeric glow properties — interpolated
+        property real glowIntensity: lerpReal(_prev.glowIntensity, _tgt.glowIntensity, _t)
+        property real glowInnerThreshold: lerpReal(_prev.glowInnerThreshold, _tgt.glowInnerThreshold, _t)
+        property real glowMidThreshold: lerpReal(_prev.glowMidThreshold, _tgt.glowMidThreshold, _t)
+        property real glowOuterThreshold: lerpReal(_prev.glowOuterThreshold, _tgt.glowOuterThreshold, _t)
+        property real glowMinFieldStrength: lerpReal(_prev.glowMinFieldStrength, _tgt.glowMinFieldStrength, _t)
+
+        // RGB conversions for colors (derived from interpolated hex values above)
         readonly property var gradientColor1Rgb: hexToRgb(gradientColor1)
         readonly property var gradientColor2Rgb: hexToRgb(gradientColor2)
         readonly property var gradientColor3Rgb: hexToRgb(gradientColor3)
@@ -603,9 +646,9 @@ Rectangle {
         readonly property var uiTextColorRgb: hexToRgb(uiTextColor)
         readonly property var uiBackgroundColorRgb: hexToRgb(uiBackgroundColor)
 
-        // Gradient mode values for shaders
-        readonly property int gradientModeValue: getGradientMode(activeTheme.gradientType)
-        readonly property int backgroundGradientModeValue: getGradientMode(activeTheme.backgroundGradientType)
+        // Gradient mode values for shaders (derived from interpolated gradientType)
+        readonly property int gradientModeValue: getGradientMode(gradientType)
+        readonly property int backgroundGradientModeValue: getGradientMode(backgroundGradientType)
 
     }
 
@@ -1714,6 +1757,10 @@ Rectangle {
 
     // Initialize when component is ready
     Component.onCompleted: {
+        // Initialize theme transition state
+        previousTheme = activeTheme
+        targetTheme = activeTheme
+
         // Set initial UI state based on config
         setInitialUIState()
 
