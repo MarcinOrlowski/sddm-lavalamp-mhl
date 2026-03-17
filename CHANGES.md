@@ -2,6 +2,7 @@
 
 ## v2.1.0 (TBD)
 - Added theme name label next to the theme switcher button.
+- Added new color themes: sunset, neon, arctic, citrus, crimson.
 
 ## v2.0.0 (2026-03-17)
 - Ported to Plasam 6 (dropped Plasma 5 completely).
