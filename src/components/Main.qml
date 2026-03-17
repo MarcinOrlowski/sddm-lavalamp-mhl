@@ -35,7 +35,7 @@ Rectangle {
         return x - Math.floor(x);
     }
 
-    function computeMetaballPositions(time, randomSeed, count, resW, resH, minSize, maxSize, speedBuckets, vBias, hScale) {
+    function computeMetaballPositions(time, randomSeed, count, resW, resH, minSize, maxSize, speedBuckets, speedMultiplier, vBias, hScale) {
         var positions = [];
         for (var i = 0; i < count; i++) {
             var seed = (i + randomSeed) * 12.9898;
@@ -59,8 +59,8 @@ Rectangle {
                     break;
                 }
             }
-            // Convert to internal scale (same as themeConfig division by 100)
-            var speed = (randomSpd * (bucketMaxSpeed - bucketMinSpeed) + bucketMinSpeed) / 100.0;
+            // Convert to internal scale (same as themeConfig division by 100), apply global multiplier
+            var speed = (randomSpd * (bucketMaxSpeed - bucketMinSpeed) + bucketMinSpeed) / 100.0 * speedMultiplier;
             var dirX = (randomVX - 0.5) * 2.0;
             var dirY = (randomVY - 0.5) * 2.0;
             if (Math.abs(dirX) < 0.3) dirX = (dirX >= 0 ? 0.3 : -0.3);
@@ -155,6 +155,7 @@ Rectangle {
         readonly property real metaballMaxSize: 0.07
         readonly property real metaballMinSpeed: 50
         readonly property real metaballMaxSpeed: 83
+        readonly property real speedMultiplier: 1.0  // Global speed multiplier for all orbs
         // Speed buckets: smaller orbs move faster, larger orbs move slower
         // maxSize = normalized size threshold (0-1), speeds in same scale as metaballMinSpeed/metaballMaxSpeed
         readonly property var speedBuckets: [
@@ -874,7 +875,7 @@ Rectangle {
                 time, container.metaballRandomSeed, themeConfig.metaballCount,
                 container.width, container.height,
                 minSizePx, maxSizePx,
-                simulationConfig.speedBuckets,
+                simulationConfig.speedBuckets, simulationConfig.speedMultiplier,
                 themeConfig.verticalBias, themeConfig.horizontalScale
             );
             var matrices = packMetaballsToMatrices(positions, container.metaballMatCount);
