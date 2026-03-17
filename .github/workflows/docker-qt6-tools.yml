@@ -20,7 +20,7 @@ on:
   workflow_dispatch:
 
 env:
-  IMAGE_NAME: ghcr.io/${{ github.repository }}/qt6-tools
+  IMAGE_NAME: ghcr.io/marcinorlowski/sddm-lavalamp-mhl/qt6-tools
 
 jobs:
   build-and-push:
