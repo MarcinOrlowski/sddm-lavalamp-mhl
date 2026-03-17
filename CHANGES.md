@@ -8,6 +8,7 @@
 - Tweaked glow intensity for better theme visibility.
 - Adjusted minimum metaball speed to prevent near-stationary metaballs.
 - Removed debug console logging from theme code.
+- Debian (`*.deb`) package no longer suggests manual SDDM restart.
 
 ## v2.0.0 (2026-03-17)
 - Ported to Plasam 6 (dropped Plasma 5 completely).
