@@ -122,6 +122,11 @@ void main() {
         }
     }
 
+    // Background gradient color (computed once, used in all fallback paths)
+    vec3 bgColor = backgroundGradientEnabled != 0 ?
+        calculateBackgroundGradientColor(x, y) :
+        vec3(0.0, 0.0, 0.0);
+
     if (glowEffectEnabled != 0) {
         float fieldStrength = min(1.0, sum * glowIntensity / 10.0);
 
@@ -154,24 +159,20 @@ void main() {
                 alpha = 0.2 * fade;
             }
 
-            fragColor = vec4(glowColor, alpha) * qt_Opacity;
+            // Blend glow over background gradient
+            vec3 blended = mix(bgColor, glowColor, alpha);
+            fragColor = vec4(blended, 1.0) * qt_Opacity;
         } else {
-            fragColor = vec4(0.0, 0.0, 0.0, 0.0);
+            fragColor = vec4(bgColor, 1.0) * qt_Opacity;
         }
     } else {
         if (sum >= threshold) {
             vec3 colorBase = calculateGradientColor(x, y);
-
-            vec3 bgColor = backgroundGradientEnabled != 0 ?
-                calculateBackgroundGradientColor(x, y) :
-                vec3(0.0, 0.0, 0.0);
-
             float fade = max(0.0, 1.0 - (sum - threshold) * 100.0);
-
             vec3 finalColor = mix(colorBase, bgColor, fade);
             fragColor = vec4(finalColor, 1.0) * qt_Opacity;
         } else {
-            fragColor = vec4(0.0, 0.0, 0.0, 0.0);
+            fragColor = vec4(bgColor, 1.0) * qt_Opacity;
         }
     }
 }

@@ -455,8 +455,6 @@ Rectangle {
     // Shader file paths (pre-compiled .qsb for Qt 6)
     readonly property string vertexShaderPath: Qt.resolvedUrl("../shaders/metaballs.vert.qsb")
     readonly property string metaballsShaderPath: Qt.resolvedUrl("../shaders/metaballs.frag.qsb")
-    readonly property string backgroundShaderPath: Qt.resolvedUrl("../shaders/background.frag.qsb")
-    readonly property string backgroundVertexShaderPath: Qt.resolvedUrl("../shaders/background.vert.qsb")
 
     function resetHideTimer() {
         if (themeConfig.uiAutoHide) {
@@ -528,24 +526,7 @@ Rectangle {
         }
     }
 
-    // Background gradient (behind metaballs) - reuses same gradient logic as metaballs
-    ShaderEffect {
-        anchors.fill: parent
-        visible: themeConfig.backgroundGradientEnabled
-
-        property size resolution: Qt.size(container.width, container.height)
-        property vector3d baseColor: Qt.vector3d(themeConfig.metaballBaseColorR, themeConfig.metaballBaseColorG, themeConfig.metaballBaseColorB)
-        property vector3d gradientColor1: Qt.vector3d(themeConfig.backgroundColor1Rgb.r, themeConfig.backgroundColor1Rgb.g, themeConfig.backgroundColor1Rgb.b)
-        property vector3d gradientColor2: Qt.vector3d(themeConfig.backgroundColor2Rgb.r, themeConfig.backgroundColor2Rgb.g, themeConfig.backgroundColor2Rgb.b)
-        property vector3d gradientColor3: Qt.vector3d(themeConfig.backgroundColor3Rgb.r, themeConfig.backgroundColor3Rgb.g, themeConfig.backgroundColor3Rgb.b)
-        property vector3d gradientColor4: Qt.vector3d(themeConfig.backgroundColor4Rgb.r, themeConfig.backgroundColor4Rgb.g, themeConfig.backgroundColor4Rgb.b)
-        property int gradientMode: themeConfig.backgroundGradientModeValue
-
-        vertexShader: backgroundVertexShaderPath
-        fragmentShader: backgroundShaderPath
-    }
-
-    // Metaballs background effect
+    // Metaballs + background gradient (single pass)
     ShaderEffect {
         id: metaballShader
         anchors.fill: parent
