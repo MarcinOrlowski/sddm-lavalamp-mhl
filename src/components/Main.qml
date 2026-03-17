@@ -536,12 +536,11 @@ Rectangle {
         themeTransitionAnimation.restart()
     }
 
-    // Gradient mode constants  
+    // Gradient mode mapping
     readonly property int gradientModeVertical: 0
     readonly property int gradientModeCorners: 1
     readonly property int gradientModeRainbow: 2
 
-    // Gradient mode mapping function
     function getGradientMode(gradientType) {
         switch(gradientType) {
             case "vertical": return gradientModeVertical
@@ -663,7 +662,7 @@ Rectangle {
 
     // Auto-hide UI properties
     property bool uiVisible: !themeConfig.uiHideOnStart  // Start hidden if configured
-    property bool enableAnimations: true  // Enable animations
+    property bool enableAnimations: true
     property bool hideCooldown: false  // Brief cooldown after hide to ignore spurious mouse events
 
     // Auto-focus when UI becomes visible
@@ -698,7 +697,7 @@ Rectangle {
     // Activity tracking timer - clears focus after inactivity
     Timer {
         id: activityTimer
-        interval: 3000  // Clear focus after 3 seconds of inactivity
+        interval: 3000
         running: false
         repeat: false
         onTriggered: {
@@ -863,7 +862,7 @@ Rectangle {
         }
     }
 
-    // Metaballs + background gradient (single pass)
+    // Metaballs + background gradient
     ShaderEffect {
         id: metaballShader
         anchors.fill: parent
@@ -955,7 +954,6 @@ Rectangle {
             }
         }
     }
-
 
     // Login form container
     Rectangle {
@@ -1755,13 +1753,10 @@ Rectangle {
         }
     }
 
-    // Initialize when component is ready
     Component.onCompleted: {
-        // Initialize theme transition state
         previousTheme = activeTheme
         targetTheme = activeTheme
 
-        // Set initial UI state based on config
         setInitialUIState()
 
         // Auto-focus after initial load
