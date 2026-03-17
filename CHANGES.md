@@ -2,6 +2,7 @@
 
 ## v2.1.0 (TBD)
 - Added theme name label next to the theme switcher button.
+- Added new color themes: Sunset, Neon, Arctic, Citrus, Crimson.
 - Fixed `test-virtual-display` helper always going full screen on Wayland.
 
 ## v2.0.0 (2026-03-17)

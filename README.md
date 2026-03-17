@@ -11,27 +11,12 @@ See [Installation](docs/README.md) document for theme installation guides.
 
 ## Themes
 
-Comes in multiple color themes to suit your liking and you can always toggle the visible theme
-at runtime by using "dice" icon located in upper-left corner of your screen. Some of the 
-themese are previewed below.
+Comes in multiple color themes to suit your liking: Arctic, Citrus, [Crimson](img/preview-crimson.webp),
+[Forest](img/preview-forest.webp), [Heat](img/preview-heat.webp), Neon, [Ocean](img/preview-ocean.webp)
+and Sunset. You can always change the visible theme at runtime by using "dice" icon located in 
+upper-left corner of your screen.
 
-### Heat
-
-![Lava Lamp MHL Style Heat](img/preview-heat.webp)
-
-### Ocean
-
-![Lava Lamp MHL Style Ocean](img/preview-ocean.webp)
-
-### Forest
-
-![Lava Lamp MHL Style Forest](img/preview-forest.webp)
-
-## Configuration
-
-There's no configuration required, but if you fancy specific theme style, you can set it
-by editing `/usr/share/sddm/themes/lavalamp-mhl/theme.conf` file as per instructions provided
-in that file.
+![Themes](img/themes.webp)
 
 ## Developers
 
