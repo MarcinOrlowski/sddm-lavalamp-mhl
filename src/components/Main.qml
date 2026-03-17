@@ -526,10 +526,72 @@ Rectangle {
         }
     }
 
+    // Fallback message when shaders are not supported
+    Rectangle {
+        id: shaderFallback
+        anchors.fill: parent
+        color: "#4a1a1a"
+        visible: metaballShader.status === ShaderEffect.Error
+
+        Row {
+            anchors.horizontalCenter: parent.horizontalCenter
+            anchors.top: parent.top
+            anchors.topMargin: 40
+            spacing: 16
+
+            Item {
+                width: 48
+                height: 48
+                anchors.verticalCenter: parent.verticalCenter
+                Image {
+                    id: errorIconLeft
+                    anchors.fill: parent
+                    source: "../assets/error.svgz"
+                    sourceSize.width: 48
+                    sourceSize.height: 48
+                    visible: false
+                }
+                ColorOverlay {
+                    anchors.fill: errorIconLeft
+                    source: errorIconLeft
+                    color: "#ffffff"
+                }
+            }
+
+            Text {
+                text: "No shader support detected. This theme requires GPU shader support to render."
+                color: "#ffffff"
+                font.family: themeConfig.uiFont
+                font.pixelSize: 32
+                anchors.verticalCenter: parent.verticalCenter
+            }
+
+            Item {
+                width: 48
+                height: 48
+                anchors.verticalCenter: parent.verticalCenter
+                Image {
+                    id: errorIconRight
+                    anchors.fill: parent
+                    source: "../assets/error.svgz"
+                    sourceSize.width: 48
+                    sourceSize.height: 48
+                    visible: false
+                }
+                ColorOverlay {
+                    anchors.fill: errorIconRight
+                    source: errorIconRight
+                    color: "#ffffff"
+                }
+            }
+        }
+    }
+
     // Metaballs + background gradient (single pass)
     ShaderEffect {
         id: metaballShader
         anchors.fill: parent
+        visible: status !== ShaderEffect.Error
 
         property real time: 0
         property size resolution: Qt.size(container.width, container.height)
