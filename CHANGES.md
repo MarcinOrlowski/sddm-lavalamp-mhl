@@ -1,6 +1,6 @@
 # Changelog
 
-## v2.1.0 (TBD)
+## v2.1.0 (2026-03-18)
 - Added configurable orb count in `theme.conf` (range: 16-70, default: 35).
 - Added theme name label next to the theme switcher button.
 - Added new color themes: Sunset, Neon, Arctic, Citrus, Crimson.
