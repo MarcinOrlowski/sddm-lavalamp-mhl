@@ -181,9 +181,18 @@ Rectangle {
         readonly property real formOpacity: 0.85
         readonly property bool debugAlwaysShowSessionSelector: false
         readonly property bool showThemeName: true
-        readonly property int themeTransitionDuration: 1500
-        readonly property bool autoThemeChange: true        // Enable automatic theme cycling
-        readonly property int autoThemeChangeDelay: 30000   // Time between theme switches (ms)
+        readonly property int themeTransitionDuration: {
+            var val = parseFloat(config.stringValue("themeTransitionDuration"))
+            return (isNaN(val) || val <= 0) ? 1500 : Math.round(val * 1000)
+        }
+        readonly property bool autoThemeChange: {
+            var val = config.stringValue("autoThemeChange")
+            return val === "" ? true : val.toLowerCase() === "true"
+        }
+        readonly property int autoThemeChangeDelay: {
+            var val = parseFloat(config.stringValue("autoThemeChangeDelay"))
+            return (isNaN(val) || val <= 0) ? 30000 : Math.round(val * 1000)
+        }
     }
 
     // Visual themes (colors and rendering only)
