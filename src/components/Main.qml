@@ -182,6 +182,8 @@ Rectangle {
         readonly property bool debugAlwaysShowSessionSelector: false
         readonly property bool showThemeName: true
         readonly property int themeTransitionDuration: 1500
+        readonly property bool autoThemeChange: true        // Enable automatic theme cycling
+        readonly property int autoThemeChangeDelay: 30000   // Time between theme switches (ms)
     }
 
     // Visual themes (colors and rendering only)
@@ -534,6 +536,10 @@ Rectangle {
         currentTheme = availableThemes[nextIndex]
         targetTheme = activeTheme
         themeTransitionAnimation.restart()
+        // Reset auto-change timer on manual cycle
+        if (simulationConfig.autoThemeChange) {
+            autoThemeChangeTimer.restart()
+        }
     }
 
     // Gradient mode mapping
@@ -692,6 +698,15 @@ Rectangle {
         interval: 500
         repeat: false
         onTriggered: hideCooldown = false
+    }
+
+    // Auto theme change timer - cycles through themes automatically
+    Timer {
+        id: autoThemeChangeTimer
+        interval: simulationConfig.autoThemeChangeDelay
+        running: simulationConfig.autoThemeChange
+        repeat: true
+        onTriggered: cycleTheme()
     }
 
     // Activity tracking timer - clears focus after inactivity
