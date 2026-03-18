@@ -11,7 +11,7 @@
 #
 #####################################################################
 
-THEME_DIR="$(dirname "${0}")"
+THEME_DIR="$(dirname "$(realpath "${0}")")/../src"
 THEME_NAME="lavalamp-mhl"
 
 echo "Testing Lavalamp MHL SDDM Theme…"
@@ -34,7 +34,7 @@ echo "Press Ctrl+C to exit the test."
 echo ""
 
 # Run the test
-"${GREETER_BIN}" --test-mode --theme .
+"${GREETER_BIN}" --test-mode --theme "${THEME_DIR}"
 
 echo ""
 echo "Theme test completed."

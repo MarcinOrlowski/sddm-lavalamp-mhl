@@ -1,0 +1,6 @@
+[sddm-lavalamp-mhl]
+fqdn = ppa.launchpad.net
+method = sftp
+incoming = ~marcinorlowski/ppa/ubuntu/
+login = marcinorlowski
+allow_unsigned_uploads = 0
