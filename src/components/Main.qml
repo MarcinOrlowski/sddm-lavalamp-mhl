@@ -182,7 +182,7 @@ Rectangle {
         readonly property bool debugAlwaysShowSessionSelector: false
         readonly property bool showThemeName: true
         readonly property int themeTransitionDuration: {
-            var val = parseFloat(config.stringValue("themeTransitionDuration"))
+            var val = parseFloat(config.stringValue("themeTransitionDuration").replace(",", "."))
             return (isNaN(val) || val <= 0) ? 1500 : Math.round(val * 1000)
         }
         readonly property bool autoThemeChange: {
@@ -190,7 +190,7 @@ Rectangle {
             return val === "" ? true : val.toLowerCase() === "true"
         }
         readonly property int autoThemeChangeDelay: {
-            var val = parseFloat(config.stringValue("autoThemeChangeDelay"))
+            var val = parseFloat(config.stringValue("autoThemeChangeDelay").replace(",", "."))
             return (isNaN(val) || val <= 0) ? 30000 : Math.round(val * 1000)
         }
     }
