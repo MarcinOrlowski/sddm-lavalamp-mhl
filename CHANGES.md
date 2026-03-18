@@ -1,6 +1,6 @@
 # Changelog
 
-## v2.2.0 (unreleased)
+## v2.2.0 (TBD)
 - Added smooth color transitions when cycling between themes.
 - Added automatic theme cycling with configurable delay and cross-fade duration.
 
