@@ -54,9 +54,11 @@ while IFS= read -r LINE; do
     if [[ "${LINE}" =~ ^##\ v([0-9]+\.[0-9]+\.[0-9]+)\ \(([0-9]{4}-[0-9]{2}-[0-9]{2})\) ]]; then
         # Close previous entry if any
         if [ -n "${CURRENT_VERSION}" ]; then
-            echo "" >> "${OUTPUT_FILE}"
-            echo " -- ${MAINTAINER}  ${CURRENT_DATE}" >> "${OUTPUT_FILE}"
-            echo "" >> "${OUTPUT_FILE}"
+            {
+                echo ""
+                echo " -- ${MAINTAINER}  ${CURRENT_DATE}"
+                echo ""
+            } >> "${OUTPUT_FILE}"
         fi
         CURRENT_VERSION="${BASH_REMATCH[1]}"
         # Convert YYYY-MM-DD to RFC 2822 date (required by Debian changelog)
@@ -70,7 +72,9 @@ done < "${CHANGES_MD}"
 
 # Close last entry
 if [ -n "${CURRENT_VERSION}" ]; then
-    echo "" >> "${OUTPUT_FILE}"
-    echo " -- ${MAINTAINER}  ${CURRENT_DATE}" >> "${OUTPUT_FILE}"
-    echo "" >> "${OUTPUT_FILE}"
+    {
+        echo ""
+        echo " -- ${MAINTAINER}  ${CURRENT_DATE}"
+        echo ""
+    } >> "${OUTPUT_FILE}"
 fi

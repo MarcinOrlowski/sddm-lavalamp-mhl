@@ -315,7 +315,7 @@ echo
 echo "=== Source package built successfully! ==="
 echo "Output directory: ${BUILD_DIR}"
 echo
-ls -1 "${BUILD_DIR}"/${PKG_NAME}_${DEB_VERSION}*
+ls -1 "${BUILD_DIR}/${PKG_NAME}_${DEB_VERSION}"*
 echo
 
 if [ "${UPLOAD}" = true ]; then
