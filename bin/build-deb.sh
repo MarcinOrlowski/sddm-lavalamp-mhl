@@ -21,15 +21,18 @@
 # DEPENDENCIES:
 #   - dpkg-deb (part of dpkg package)
 #   - fakeroot (for building packages as non-root user)
+#   - gnupg (only required for --sign)
 #   - Standard build tools (coreutils, findutils, etc.)
 #
 #   Install dependencies on Ubuntu/Debian:
 #   sudo apt update
 #   sudo apt install dpkg-dev fakeroot build-essential
+#   sudo apt install gnupg  # only for signing
 #
 # USAGE:
-#   chmod +x build-deb-package.sh
-#   ./build-deb-package.sh
+#   ./build-deb.sh              # build without signing
+#   ./build-deb.sh --sign       # build and sign with default GPG key
+#   ./build-deb.sh --gpg-key ID # build and sign with specific GPG key
 #
 # OUTPUT:
 #   Creates sddm-theme-lavalamp-mhl_2.0.0_all.deb in the current directory
@@ -56,12 +59,57 @@
 
 set -uo pipefail
 
+# Parse command-line arguments
+SIGN_PACKAGE=false
+GPG_KEY=""
+
+while [[ $# -gt 0 ]]; do
+    case "$1" in
+        --sign)
+            SIGN_PACKAGE=true
+            shift
+            ;;
+        --gpg-key)
+            if [ -z "${2:-}" ]; then
+                echo "ERROR: --gpg-key requires a key ID argument"
+                exit 1
+            fi
+            GPG_KEY="$2"
+            SIGN_PACKAGE=true
+            shift 2
+            ;;
+        -h|--help)
+            echo "Usage: $(basename "$0") [OPTIONS]"
+            echo
+            echo "Options:"
+            echo "  --sign          Sign the .deb package with GPG (creates .sig file)"
+            echo "  --gpg-key ID    GPG key ID to use for signing (implies --sign)"
+            echo "  -h, --help      Show this help message"
+            exit 0
+            ;;
+        *)
+            echo "ERROR: Unknown option: $1"
+            echo "Run with --help for usage information."
+            exit 1
+            ;;
+    esac
+done
+
 # NOTE: our root dir means parent folder of where scripts lives
 # shellcheck disable=SC2155
 readonly SCRIPT_DIR="$(dirname "$(realpath "${0}")")"
 ROOT_DIR="$(dirname "${SCRIPT_DIR}")"
 readonly ROOT_DIR
 pushd "${ROOT_DIR}" > /dev/null || exit
+
+# Validate signing dependencies early
+if [ "${SIGN_PACKAGE}" = true ]; then
+    if ! command -v gpg >/dev/null 2>&1; then
+        echo "ERROR: gpg is required for package signing but not found."
+        echo "Install it with: sudo apt install gnupg"
+        exit 1
+    fi
+fi
 
 # Package information
 PKG_NAME="sddm-theme-lavalamp-mhl"
@@ -232,6 +280,47 @@ License: MIT
  SOFTWARE.
 EOF
 
+# Generate Debian changelog from CHANGES.md
+echo "Generating changelog…"
+CHANGELOG_FILE="${PACKAGE_DIR}/usr/share/doc/${PKG_NAME}/changelog.Debian"
+CHANGES_MD="${ROOT_DIR}/CHANGES.md"
+
+if [ ! -f "${CHANGES_MD}" ]; then
+    echo "ERROR: CHANGES.md not found: ${CHANGES_MD}"
+    exit 1
+fi
+
+# Parse CHANGES.md into Debian changelog format
+CURRENT_VERSION=""
+CURRENT_DATE=""
+while IFS= read -r LINE; do
+    # Match version headers: ## v2.1.0 (2026-03-18)
+    if [[ "${LINE}" =~ ^##\ v([0-9]+\.[0-9]+\.[0-9]+)\ \(([0-9]{4}-[0-9]{2}-[0-9]{2})\) ]]; then
+        # Close previous entry if any
+        if [ -n "${CURRENT_VERSION}" ]; then
+            echo "" >> "${CHANGELOG_FILE}"
+            echo " -- ${MAINTAINER}  ${CURRENT_DATE}" >> "${CHANGELOG_FILE}"
+            echo "" >> "${CHANGELOG_FILE}"
+        fi
+        CURRENT_VERSION="${BASH_REMATCH[1]}"
+        # Convert YYYY-MM-DD to RFC 2822 date (required by Debian changelog)
+        CURRENT_DATE=$(date -d "${BASH_REMATCH[2]}" -R)
+        echo "${PKG_NAME} (${CURRENT_VERSION}) unstable; urgency=low" >> "${CHANGELOG_FILE}"
+        echo "" >> "${CHANGELOG_FILE}"
+    elif [[ "${LINE}" =~ ^-\ (.+) ]] && [ -n "${CURRENT_VERSION}" ]; then
+        echo "  * ${BASH_REMATCH[1]}" >> "${CHANGELOG_FILE}"
+    fi
+done < "${CHANGES_MD}"
+
+# Close last entry
+if [ -n "${CURRENT_VERSION}" ]; then
+    echo "" >> "${CHANGELOG_FILE}"
+    echo " -- ${MAINTAINER}  ${CURRENT_DATE}" >> "${CHANGELOG_FILE}"
+    echo "" >> "${CHANGELOG_FILE}"
+fi
+
+gzip -9 "${CHANGELOG_FILE}"
+
 # Calculate installed size (in KB)
 INSTALLED_SIZE=$(du -sk "${PACKAGE_DIR}" | cut -f1)
 echo "Installed-Size: ${INSTALLED_SIZE}" >> "${DEBIAN_DIR}/control"
@@ -253,6 +342,19 @@ DEB_DIR="${ROOT_DIR}"
 DEB_FILE="${PKG_NAME}_${VERSION}_${ARCH}.deb"
 DEB_FULL="${DEB_DIR}/${DEB_FILE}"
 mv "${DEB_FILE}" "${DEB_DIR}/"
+
+# Sign the package if requested
+if [ "${SIGN_PACKAGE}" = true ]; then
+    echo
+    echo "Signing package…"
+    SIG_FILE="${DEB_FULL}.sig"
+    GPG_ARGS=(--detach-sign --armor --output "${SIG_FILE}")
+    if [ -n "${GPG_KEY}" ]; then
+        GPG_ARGS+=(--local-user "${GPG_KEY}")
+    fi
+    gpg "${GPG_ARGS[@]}" "${DEB_FULL}"
+    echo "Signature: ${SIG_FILE}"
+fi
 
 echo
 echo "=== Package built successfully! ==="
