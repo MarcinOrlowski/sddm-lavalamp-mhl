@@ -38,7 +38,6 @@
 
 set -euo pipefail
 
-# Parse command-line arguments
 GPG_KEY=""
 SERIES="questing"
 DEB_REVISION="1"
@@ -158,22 +157,18 @@ echo "Series:  ${SERIES}"
 echo "GPG Key: ${GPG_KEY}"
 echo
 
-# Clean and create build directory
 echo "Preparing build directory…"
 rm -rf "${BUILD_DIR}"
 mkdir -p "${SOURCE_DIR}"
 
-# Copy theme source files (excluding test scripts)
 echo "Copying theme sources…"
 cp -r "${ROOT_DIR}/src"/* "${SOURCE_DIR}/"
-rm -f "${SOURCE_DIR}"/test-*.sh
 
-# Create reproducible orig tarball (must be created BEFORE debian/ directory exists)
 echo "Creating orig tarball…"
 tar --sort=name --owner=root:0 --group=root:0 \
-    -czf "${BUILD_DIR}/${ORIG_TARBALL}" -C "${BUILD_DIR}" "${PKG_NAME}-${VERSION}"
+    -czf "${BUILD_DIR}/${ORIG_TARBALL}" -C "${BUILD_DIR}" \
+    "${PKG_NAME}-${VERSION}"
 
-# Create debian/ directory
 echo "Creating debian/ packaging…"
 DEBIAN_DIR="${SOURCE_DIR}/debian"
 mkdir -p "${DEBIAN_DIR}/source"
@@ -307,11 +302,10 @@ fi
 exit 0
 EOF
 
-# debian/changelog — parse from CHANGES.md
+# debian/changelog from CHANGES.md
 echo "Generating debian/changelog…"
 "${SCRIPT_DIR}/gen-deb-changelog.sh" "${CHANGES_MD}" "${DEBIAN_DIR}/changelog" "${PKG_NAME}" "${MAINTAINER}" "${SERIES}" "-${DEB_REVISION}"
 
-# Build signed source package
 echo
 echo "Building source package…"
 cd "${SOURCE_DIR}"
@@ -324,7 +318,6 @@ echo
 ls -1 "${BUILD_DIR}"/${PKG_NAME}_${DEB_VERSION}*
 echo
 
-# Upload if requested
 if [ "${UPLOAD}" = true ]; then
     CHANGES_FILE="${BUILD_DIR}/${PKG_NAME}_${DEB_VERSION}_source.changes"
     if [ ! -f "${CHANGES_FILE}" ]; then

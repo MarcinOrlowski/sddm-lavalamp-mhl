@@ -13,7 +13,7 @@
 
 # Runs the theme in a windowed Xephyr display for screenshots and testing
 
-THEME_DIR="$(dirname "${0}")"
+THEME_DIR="$(dirname "$(realpath "${0}")")/../src"
 RESOLUTION="${1:-1280x720}"
 DISPLAY_NUM="${2:-1}"
 

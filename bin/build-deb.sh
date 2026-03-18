@@ -166,8 +166,6 @@ mkdir -p "${THEME_INSTALL_DIR}"
 echo "Copying theme files…"
 cp -r "${SOURCE_DIR}"/* "${THEME_INSTALL_DIR}/"
 
-# Remove test scripts from package (not needed in installation)
-rm -f "${THEME_INSTALL_DIR}"/test-*.sh
 
 # Ensure proper permissions
 find "${THEME_INSTALL_DIR}" -type f -exec chmod 644 {} \;
