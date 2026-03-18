@@ -20,6 +20,9 @@ Rectangle {
     // Hide mouse cursor when UI is hidden
     property bool shouldHideCursor: themeConfig.uiAutoHide && !uiVisible
 
+    // Theme version from theme.conf
+    property string themeVersion: config.stringValue("version") || ""
+
     // Random seed for metaball initial positions (set once at startup)
     property real metaballRandomSeed: Math.random() * 10000.0
 
@@ -32,7 +35,7 @@ Rectangle {
         return x - Math.floor(x);
     }
 
-    function computeMetaballPositions(time, randomSeed, count, resW, resH, minSize, maxSize, minSpeed, maxSpeed, vBias, hScale) {
+    function computeMetaballPositions(time, randomSeed, count, resW, resH, minSize, maxSize, speedBuckets, speedMultiplier, vBias, hScale) {
         var positions = [];
         for (var i = 0; i < count; i++) {
             var seed = (i + randomSeed) * 12.9898;
@@ -44,9 +47,26 @@ Rectangle {
             var randomSpd = fract(Math.sin(seed * 2.236) * 43758.5453);
 
             var radius = randomR * (maxSize - minSize) + minSize;
-            var speed = randomSpd * (maxSpeed - minSpeed) + minSpeed;
-            var vx = (randomVX - 0.5) * 2.0 * speed * hScale;
-            var vy = (randomVY - 0.5) * 2.0 * speed * vBias;
+
+            // Speed buckets: derive speed range from orb size
+            var sizeNorm = (maxSize > minSize) ? (radius - minSize) / (maxSize - minSize) : 0.5;
+            var bucketMinSpeed = speedBuckets[speedBuckets.length - 1].minSpeed;
+            var bucketMaxSpeed = speedBuckets[speedBuckets.length - 1].maxSpeed;
+            for (var b = 0; b < speedBuckets.length; b++) {
+                if (sizeNorm <= speedBuckets[b].maxSize) {
+                    bucketMinSpeed = speedBuckets[b].minSpeed;
+                    bucketMaxSpeed = speedBuckets[b].maxSpeed;
+                    break;
+                }
+            }
+            // Convert to internal scale (same as themeConfig division by 100), apply global multiplier
+            var speed = (randomSpd * (bucketMaxSpeed - bucketMinSpeed) + bucketMinSpeed) / 100.0 * speedMultiplier;
+            var dirX = (randomVX - 0.5) * 2.0;
+            var dirY = (randomVY - 0.5) * 2.0;
+            if (Math.abs(dirX) < 0.3) dirX = (dirX >= 0 ? 0.3 : -0.3);
+            if (Math.abs(dirY) < 0.3) dirY = (dirY >= 0 ? 0.3 : -0.3);
+            var vx = dirX * speed * hScale;
+            var vy = dirY * speed * vBias;
 
             var startX = randomX * (resW - 2.0 * radius) + radius;
             var startY = randomY * (resH - 2.0 * radius) + radius;
@@ -116,13 +136,33 @@ Rectangle {
 
     TextConstants { id: textConstants }
 
+    // Orb count limits
+    readonly property int metaballCountMin: 16
+    readonly property int metaballCountDefault: 35
+    // Changing metaballCountMax requires matching updates:
+    //   1. Fragment shader (metaballs.frag): add/remove mat4 uniforms in the uniform buffer
+    //      and corresponding if/else branches in getMetaball()
+    //   2. ShaderEffect (below): add/remove metaballDataN properties and matrix assignments
+    //      in onTimeChanged
+    //   3. Rebuild .qsb shader: run bin/build-shaders.sh
+    //   Max mat4 count = ceil(metaballCountMax / 4)
+    readonly property int metaballCountMax: 70
+
     // Global simulation parameters (not theme-specific)
     readonly property QtObject simulationConfig: QtObject {
-        readonly property int metaballCount: 35
+        readonly property int metaballCount: Math.min(metaballCountMax, Math.max(metaballCountMin, parseInt(config.stringValue("orbs")) || metaballCountDefault))
         readonly property real metaballMinSize: 0.02
         readonly property real metaballMaxSize: 0.07
-        readonly property real metaballMinSpeed: 32
+        readonly property real metaballMinSpeed: 50
         readonly property real metaballMaxSpeed: 83
+        readonly property real speedMultiplier: 1.0  // Global speed multiplier for all orbs
+        // Speed buckets: smaller orbs move faster, larger orbs move slower
+        // maxSize = normalized size threshold (0-1), speeds in same scale as metaballMinSpeed/metaballMaxSpeed
+        readonly property var speedBuckets: [
+            { maxSize: 0.33, minSpeed: 70, maxSpeed: 100 },  // Small orbs: fast
+            { maxSize: 0.66, minSpeed: 45, maxSpeed: 75 },   // Medium orbs: medium
+            { maxSize: 1.00, minSpeed: 25, maxSpeed: 50 }    // Large orbs: slow
+        ]
         readonly property real metaballThreshold: 0.99
         readonly property real metaballBaseColorR: 1.0
         readonly property real metaballBaseColorG: 1.0
@@ -140,6 +180,7 @@ Rectangle {
         readonly property string uiFont: "Arial"
         readonly property real formOpacity: 0.85
         readonly property bool debugAlwaysShowSessionSelector: false
+        readonly property bool showThemeName: true
     }
 
     // Visual themes (colors and rendering only)
@@ -205,10 +246,10 @@ Rectangle {
             readonly property string inputLabelColor: "#6080C0"
             readonly property string copyrightTextColor: "#80A0C0"
             readonly property bool glowEffectEnabled: true
-            readonly property real glowIntensity: 2.0
+            readonly property real glowIntensity: 5.0
             readonly property real glowInnerThreshold: 0.75
-            readonly property real glowMidThreshold: 0.4
-            readonly property real glowOuterThreshold: 0.1
+            readonly property real glowMidThreshold: 0.35
+            readonly property real glowOuterThreshold: 0.05
             readonly property real glowMinFieldStrength: 0.01
         }
 
@@ -245,6 +286,176 @@ Rectangle {
             readonly property real glowOuterThreshold: 0.05
             readonly property real glowMinFieldStrength: 0.005
         }
+
+        readonly property QtObject sunset: QtObject {
+            readonly property string gradientType: "corners"
+            readonly property string gradientColor1: "#FF6B9D"
+            readonly property string gradientColor2: "#C44DFF"
+            readonly property string gradientColor3: "#FF8C42"
+            readonly property string gradientColor4: "#8B2FC9"
+            readonly property bool backgroundGradientEnabled: true
+            readonly property string backgroundGradientType: "corners"
+            readonly property string backgroundColor1: "#2a1030"
+            readonly property string backgroundColor2: "#1a0820"
+            readonly property string backgroundColor3: "#2a1520"
+            readonly property string backgroundColor4: "#150818"
+            readonly property string iconColor: "#FF6B9D"
+            readonly property string suspendIconColor: "#FF6B9D"
+            readonly property string hibernateIconColor: "#C44DFF"
+            readonly property string shutdownIconColor: "#FF5555"
+            readonly property string rebootIconColor: "#FF8C42"
+            readonly property int clockFontSize: 90
+            readonly property string clockColor: "#FF8CAA"
+            readonly property string uiPrimaryColor: "#8B2FC9"
+            readonly property string uiSecondaryColor: "#C44DFF"
+            readonly property string uiTextColor: "#FFE0F0"
+            readonly property string uiBackgroundColor: "#1F0A2A"
+            readonly property string welcomeTextColor: "#FF6B9D"
+            readonly property string inputLabelColor: "#C080E0"
+            readonly property string copyrightTextColor: "#C0A0D0"
+            readonly property bool glowEffectEnabled: true
+            readonly property real glowIntensity: 5.5
+            readonly property real glowInnerThreshold: 0.7
+            readonly property real glowMidThreshold: 0.3
+            readonly property real glowOuterThreshold: 0.05
+            readonly property real glowMinFieldStrength: 0.008
+        }
+
+        readonly property QtObject neon: QtObject {
+            readonly property string gradientType: "corners"
+            readonly property string gradientColor1: "#FF00FF"
+            readonly property string gradientColor2: "#00BFFF"
+            readonly property string gradientColor3: "#FF1493"
+            readonly property string gradientColor4: "#7B00FF"
+            readonly property bool backgroundGradientEnabled: true
+            readonly property string backgroundGradientType: "corners"
+            readonly property string backgroundColor1: "#0a0020"
+            readonly property string backgroundColor2: "#000a1a"
+            readonly property string backgroundColor3: "#10001a"
+            readonly property string backgroundColor4: "#050010"
+            readonly property string iconColor: "#FF00FF"
+            readonly property string suspendIconColor: "#00BFFF"
+            readonly property string hibernateIconColor: "#7B00FF"
+            readonly property string shutdownIconColor: "#FF1493"
+            readonly property string rebootIconColor: "#00FF88"
+            readonly property int clockFontSize: 90
+            readonly property string clockColor: "#E0B0FF"
+            readonly property string uiPrimaryColor: "#7B00FF"
+            readonly property string uiSecondaryColor: "#FF00FF"
+            readonly property string uiTextColor: "#F0E0FF"
+            readonly property string uiBackgroundColor: "#0D0020"
+            readonly property string welcomeTextColor: "#FF00FF"
+            readonly property string inputLabelColor: "#A060FF"
+            readonly property string copyrightTextColor: "#8080C0"
+            readonly property bool glowEffectEnabled: true
+            readonly property real glowIntensity: 5.4
+            readonly property real glowInnerThreshold: 0.7
+            readonly property real glowMidThreshold: 0.3
+            readonly property real glowOuterThreshold: 0.06
+            readonly property real glowMinFieldStrength: 0.006
+        }
+
+        readonly property QtObject arctic: QtObject {
+            readonly property string gradientType: "corners"
+            readonly property string gradientColor1: "#FFFFFF"
+            readonly property string gradientColor2: "#80D4FF"
+            readonly property string gradientColor3: "#A0E8FF"
+            readonly property string gradientColor4: "#CCF2FF"
+            readonly property bool backgroundGradientEnabled: true
+            readonly property string backgroundGradientType: "corners"
+            readonly property string backgroundColor1: "#102840"
+            readonly property string backgroundColor2: "#061020"
+            readonly property string backgroundColor3: "#0a2038"
+            readonly property string backgroundColor4: "#040c18"
+            readonly property string iconColor: "#A0D8FF"
+            readonly property string suspendIconColor: "#A0D8FF"
+            readonly property string hibernateIconColor: "#80C0E0"
+            readonly property string shutdownIconColor: "#FF8080"
+            readonly property string rebootIconColor: "#80FFB0"
+            readonly property int clockFontSize: 90
+            readonly property string clockColor: "#C0E8FF"
+            readonly property string uiPrimaryColor: "#2080B0"
+            readonly property string uiSecondaryColor: "#60B0D8"
+            readonly property string uiTextColor: "#E8F4FF"
+            readonly property string uiBackgroundColor: "#0C1825"
+            readonly property string welcomeTextColor: "#A0D8FF"
+            readonly property string inputLabelColor: "#6098C0"
+            readonly property string copyrightTextColor: "#80A8C0"
+            readonly property bool glowEffectEnabled: true
+            readonly property real glowIntensity: 4.0
+            readonly property real glowInnerThreshold: 0.65
+            readonly property real glowMidThreshold: 0.25
+            readonly property real glowOuterThreshold: 0.04
+            readonly property real glowMinFieldStrength: 0.004
+        }
+
+        readonly property QtObject citrus: QtObject {
+            readonly property string gradientType: "vertical"
+            readonly property string gradientColor1: "#FFD700"
+            readonly property string gradientColor2: "#FF9800"
+            readonly property string gradientColor3: "#FFD700"
+            readonly property string gradientColor4: "#FF9800"
+            readonly property bool backgroundGradientEnabled: true
+            readonly property string backgroundGradientType: "vertical"
+            readonly property string backgroundColor1: "#2a1e08"
+            readonly property string backgroundColor2: "#1a1004"
+            readonly property string backgroundColor3: "#2a1e08"
+            readonly property string backgroundColor4: "#1a1004"
+            readonly property string iconColor: "#FFD700"
+            readonly property string suspendIconColor: "#FFD700"
+            readonly property string hibernateIconColor: "#FFB800"
+            readonly property string shutdownIconColor: "#FF6060"
+            readonly property string rebootIconColor: "#80FF80"
+            readonly property int clockFontSize: 90
+            readonly property string clockColor: "#FFE066"
+            readonly property string uiPrimaryColor: "#8B6914"
+            readonly property string uiSecondaryColor: "#D4A020"
+            readonly property string uiTextColor: "#FFF0CC"
+            readonly property string uiBackgroundColor: "#1F1508"
+            readonly property string welcomeTextColor: "#FFD700"
+            readonly property string inputLabelColor: "#C09830"
+            readonly property string copyrightTextColor: "#C0A860"
+            readonly property bool glowEffectEnabled: true
+            readonly property real glowIntensity: 4.5
+            readonly property real glowInnerThreshold: 0.7
+            readonly property real glowMidThreshold: 0.3
+            readonly property real glowOuterThreshold: 0.05
+            readonly property real glowMinFieldStrength: 0.005
+        }
+
+        readonly property QtObject crimson: QtObject {
+            readonly property string gradientType: "corners"
+            readonly property string gradientColor1: "#DC143C"
+            readonly property string gradientColor2: "#8B0020"
+            readonly property string gradientColor3: "#FF2040"
+            readonly property string gradientColor4: "#AA0030"
+            readonly property bool backgroundGradientEnabled: true
+            readonly property string backgroundGradientType: "corners"
+            readonly property string backgroundColor1: "#120000"
+            readonly property string backgroundColor2: "#080000"
+            readonly property string backgroundColor3: "#0e0004"
+            readonly property string backgroundColor4: "#050000"
+            readonly property string iconColor: "#AA2020"
+            readonly property string suspendIconColor: "#AA2020"
+            readonly property string hibernateIconColor: "#882020"
+            readonly property string shutdownIconColor: "#CC3030"
+            readonly property string rebootIconColor: "#AA4040"
+            readonly property int clockFontSize: 90
+            readonly property string clockColor: "#CC4040"
+            readonly property string uiPrimaryColor: "#601010"
+            readonly property string uiSecondaryColor: "#8B2020"
+            readonly property string uiTextColor: "#E0C0C0"
+            readonly property string uiBackgroundColor: "#140808"
+            readonly property string welcomeTextColor: "#AA2020"
+            readonly property string inputLabelColor: "#804040"
+            readonly property string copyrightTextColor: "#806060"
+            readonly property bool glowEffectEnabled: true
+            readonly property real glowIntensity: 5.0
+            readonly property real glowInnerThreshold: 0.65
+            readonly property real glowMidThreshold: 0.28
+            readonly property real glowOuterThreshold: 0.05
+            readonly property real glowMinFieldStrength: 0.005
+        }
     }
 
     // Theme cycling state
@@ -253,18 +464,31 @@ Rectangle {
         if (!configTheme || availableThemes.indexOf(configTheme) === -1) {
             // Invalid or empty theme - pick random one
             var randomIndex = Math.floor(Math.random() * availableThemes.length)
-            console.log("Invalid/empty theme '" + configTheme + "', randomly selected:", availableThemes[randomIndex])
             return availableThemes[randomIndex]
         }
         return configTheme
     }
-    readonly property var availableThemes: ["heat", "ocean", "forest"]
+    readonly property var availableThemes: [
+        "heat",
+        "ocean",
+        "forest",
+        "sunset",
+        "neon",
+        "arctic",
+        "citrus",
+        "crimson",
+    ]
 
     // Active theme selection
     readonly property QtObject activeTheme: {
         switch(currentTheme) {
             case "ocean": return themes.ocean
             case "forest": return themes.forest
+            case "sunset": return themes.sunset
+            case "neon": return themes.neon
+            case "arctic": return themes.arctic
+            case "citrus": return themes.citrus
+            case "crimson": return themes.crimson
             case "heat":
             default: return themes.heat
         }
@@ -275,7 +499,6 @@ Rectangle {
         var currentIndex = availableThemes.indexOf(currentTheme)
         var nextIndex = (currentIndex + 1) % availableThemes.length
         currentTheme = availableThemes[nextIndex]
-        console.log("Theme changed to:", currentTheme)
     }
 
     // Gradient mode constants  
@@ -318,6 +541,7 @@ Rectangle {
         readonly property string uiFont: simulationConfig.uiFont
         readonly property real formOpacity: simulationConfig.formOpacity
         readonly property bool debugAlwaysShowSessionSelector: simulationConfig.debugAlwaysShowSessionSelector
+        readonly property bool showThemeName: simulationConfig.showThemeName
 
         // Visual properties (theme-specific)
         readonly property string iconColor: activeTheme.iconColor
@@ -383,10 +607,6 @@ Rectangle {
         readonly property int gradientModeValue: getGradientMode(activeTheme.gradientType)
         readonly property int backgroundGradientModeValue: getGradientMode(activeTheme.backgroundGradientType)
 
-        // Debug gradient modes
-        Component.onCompleted: {
-            console.log("Theme:", currentTheme, "gradientType:", activeTheme.gradientType, "→ mode:", gradientModeValue)
-        }
     }
 
     // Dynamic screen dimensions - uses primary screen geometry with fallback
@@ -401,6 +621,7 @@ Rectangle {
     // Auto-hide UI properties
     property bool uiVisible: !themeConfig.uiHideOnStart  // Start hidden if configured
     property bool enableAnimations: true  // Enable animations
+    property bool hideCooldown: false  // Brief cooldown after hide to ignore spurious mouse events
 
     // Auto-focus when UI becomes visible
     onUiVisibleChanged: {
@@ -416,9 +637,19 @@ Rectangle {
         repeat: false
         onTriggered: {
             if (themeConfig.uiAutoHide) {
+                hideCooldown = true
                 uiVisible = false
+                hideCooldownTimer.start()
             }
         }
+    }
+
+    // Brief cooldown after hiding to ignore spurious mouse events from overlay appearing
+    Timer {
+        id: hideCooldownTimer
+        interval: 500
+        repeat: false
+        onTriggered: hideCooldown = false
     }
 
     // Activity tracking timer - clears focus after inactivity
@@ -467,6 +698,7 @@ Rectangle {
 
     function recordActivity() {
         if (themeConfig.uiAutoHide) {
+            if (hideCooldown) return
             uiVisible = true
             recentActivity = true
 
@@ -488,6 +720,7 @@ Rectangle {
 
     // Global mouse area to detect activity and handle focus clearing
     MouseArea {
+        id: globalMouseArea
         anchors.fill: parent
         hoverEnabled: true
         cursorShape: container.shouldHideCursor ? Qt.BlankCursor : Qt.ArrowCursor
@@ -613,6 +846,7 @@ Rectangle {
         property real glowMidThreshold: themeConfig.glowMidThreshold
         property real glowOuterThreshold: themeConfig.glowOuterThreshold
         property real glowMinFieldStrength: themeConfig.glowMinFieldStrength
+        property int metaballCount: themeConfig.metaballCount
 
         // CPU-computed metaball position matrices (4 metaballs packed per mat4)
         property matrix4x4 metaballData0: Qt.matrix4x4(1,0,0,0, 0,1,0,0, 0,0,1,0, 0,0,0,1)
@@ -624,6 +858,15 @@ Rectangle {
         property matrix4x4 metaballData6: Qt.matrix4x4(1,0,0,0, 0,1,0,0, 0,0,1,0, 0,0,0,1)
         property matrix4x4 metaballData7: Qt.matrix4x4(1,0,0,0, 0,1,0,0, 0,0,1,0, 0,0,0,1)
         property matrix4x4 metaballData8: Qt.matrix4x4(1,0,0,0, 0,1,0,0, 0,0,1,0, 0,0,0,1)
+        property matrix4x4 metaballData9: Qt.matrix4x4(1,0,0,0, 0,1,0,0, 0,0,1,0, 0,0,0,1)
+        property matrix4x4 metaballData10: Qt.matrix4x4(1,0,0,0, 0,1,0,0, 0,0,1,0, 0,0,0,1)
+        property matrix4x4 metaballData11: Qt.matrix4x4(1,0,0,0, 0,1,0,0, 0,0,1,0, 0,0,0,1)
+        property matrix4x4 metaballData12: Qt.matrix4x4(1,0,0,0, 0,1,0,0, 0,0,1,0, 0,0,0,1)
+        property matrix4x4 metaballData13: Qt.matrix4x4(1,0,0,0, 0,1,0,0, 0,0,1,0, 0,0,0,1)
+        property matrix4x4 metaballData14: Qt.matrix4x4(1,0,0,0, 0,1,0,0, 0,0,1,0, 0,0,0,1)
+        property matrix4x4 metaballData15: Qt.matrix4x4(1,0,0,0, 0,1,0,0, 0,0,1,0, 0,0,0,1)
+        property matrix4x4 metaballData16: Qt.matrix4x4(1,0,0,0, 0,1,0,0, 0,0,1,0, 0,0,0,1)
+        property matrix4x4 metaballData17: Qt.matrix4x4(1,0,0,0, 0,1,0,0, 0,0,1,0, 0,0,0,1)
 
         onTimeChanged: {
             var minSizePx = themeConfig.metaballMinSize * container.height;
@@ -632,7 +875,7 @@ Rectangle {
                 time, container.metaballRandomSeed, themeConfig.metaballCount,
                 container.width, container.height,
                 minSizePx, maxSizePx,
-                themeConfig.metaballMinSpeed, themeConfig.metaballMaxSpeed,
+                simulationConfig.speedBuckets, simulationConfig.speedMultiplier,
                 themeConfig.verticalBias, themeConfig.horizontalScale
             );
             var matrices = packMetaballsToMatrices(positions, container.metaballMatCount);
@@ -645,6 +888,15 @@ Rectangle {
             if (matrices.length > 6) metaballData6 = matrices[6];
             if (matrices.length > 7) metaballData7 = matrices[7];
             if (matrices.length > 8) metaballData8 = matrices[8];
+            if (matrices.length > 9) metaballData9 = matrices[9];
+            if (matrices.length > 10) metaballData10 = matrices[10];
+            if (matrices.length > 11) metaballData11 = matrices[11];
+            if (matrices.length > 12) metaballData12 = matrices[12];
+            if (matrices.length > 13) metaballData13 = matrices[13];
+            if (matrices.length > 14) metaballData14 = matrices[14];
+            if (matrices.length > 15) metaballData15 = matrices[15];
+            if (matrices.length > 16) metaballData16 = matrices[16];
+            if (matrices.length > 17) metaballData17 = matrices[17];
         }
 
         vertexShader: vertexShaderPath
@@ -1274,7 +1526,7 @@ Rectangle {
         anchors.top: parent.top
         anchors.left: parent.left
         anchors.margins: 30
-        width: 48
+        width: settingsButtonRow.width
         height: 48
 
         opacity: themeConfig.uiAutoHide ? (uiVisible ? 1.0 : 0.0) : 1.0
@@ -1285,24 +1537,50 @@ Rectangle {
             }
         }
 
-        Image {
-            id: settingsIcon
-            anchors.centerIn: parent
-            width: 40
-            height: 40
-            source: "../assets/random.svgz"
-            smooth: true
-            visible: false
-        }
+        Row {
+            id: settingsButtonRow
+            spacing: 8
+            anchors.verticalCenter: parent.verticalCenter
 
-        ColorOverlay {
-            anchors.fill: settingsIcon
-            source: settingsIcon
-            color: themeConfig.iconColor
-            opacity: settingsMouseArea.containsMouse ? 1.0 : 0.8
+            Item {
+                width: 48
+                height: 48
 
-            Behavior on opacity {
-                NumberAnimation { duration: 150 }
+                Image {
+                    id: settingsIcon
+                    anchors.centerIn: parent
+                    width: 40
+                    height: 40
+                    source: "../assets/random.svgz"
+                    smooth: true
+                    visible: false
+                }
+
+                ColorOverlay {
+                    anchors.fill: settingsIcon
+                    source: settingsIcon
+                    color: themeConfig.iconColor
+                    opacity: settingsMouseArea.containsMouse ? 1.0 : 0.8
+
+                    Behavior on opacity {
+                        NumberAnimation { duration: 150 }
+                    }
+                }
+            }
+
+            Text {
+                id: themeNameLabel
+                text: currentTheme.charAt(0).toUpperCase() + currentTheme.slice(1)
+                color: themeConfig.iconColor
+                font.family: themeConfig.uiFont
+                font.pixelSize: 16
+                anchors.verticalCenter: parent.verticalCenter
+                visible: themeConfig.showThemeName
+                opacity: settingsMouseArea.containsMouse ? 1.0 : 0.8
+
+                Behavior on opacity {
+                    NumberAnimation { duration: 150 }
+                }
             }
         }
 
@@ -1417,7 +1695,7 @@ Rectangle {
                 anchors.verticalCenter: parent.verticalCenter
 
                 Text {
-                    text: "Lava Lamp MHL v1.0.0"
+                    text: "Lava Lamp MHL v" + themeVersion
                     color: themeConfig.copyrightTextColor
                     font.pixelSize: 18
                     font.bold: true
@@ -1436,19 +1714,6 @@ Rectangle {
 
     // Initialize when component is ready
     Component.onCompleted: {
-        console.log("Screen dimensions:", width, "x", height)
-        if (screenModel) {
-            console.log("Primary screen index:", screenModel.primary)
-            console.log("Number of screens:", screenModel.count)
-            for (var i = 0; i < screenModel.count; i++) {
-                var geo = screenModel.geometry(i)
-                console.log("Screen", i, "geometry:", geo.x, geo.y, geo.width, "x", geo.height)
-            }
-        } else {
-            console.warn("screenModel not available, using fallback dimensions")
-        }
-
-
         // Set initial UI state based on config
         setInitialUIState()
 

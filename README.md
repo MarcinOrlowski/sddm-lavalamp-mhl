@@ -2,19 +2,6 @@
 
 # Lava Lamp animated SDDM theme
 
-- [Lava Lamp animated SDDM theme](#lava-lamp-animated-sddm-theme)
-  - [What is it?](#what-is-it)
-  - [Themes](#themes)
-  - [Installation](docs/README.md)
-  - [Configuration](#configuration)
-  - [Feedback](#feedback)
-  - [Developers](docs/dev.md)
-  - [License](#license)
-
-______________________________________________________________________
-
-## What is it?
-
 Lava Lamp is an animated [SDDM dynamic theme](https://github.com/sddm/sddm/) stylized after the
 classic [lava lamp](https://wikipedia.org/wiki/Lava_lamp). It features a mesmerizing animation of
 colorful blobs that move and change shape, creating a relaxing and soothing visual effect. The theme
@@ -24,25 +11,16 @@ See [Installation](docs/README.md) document for theme installation guides.
 
 ## Themes
 
-Comes in multiple color themes to suit your liking.
+Comes in multiple color themes to suit your liking: Arctic, Citrus, [Crimson](img/preview-crimson.webp),
+[Forest](img/preview-forest.webp), [Heat](img/preview-heat.webp), Neon, [Ocean](img/preview-ocean.webp)
+and Sunset. You can always change the visible theme at runtime by using "dice" icon located in
+upper-left corner of your screen.
 
-### Heat
+![Themes](img/themes.webp)
 
-![Lava Lamp MHL Style Heat](img/preview-heat.webp)
+## Developers
 
-### Ocean
-
-![Lava Lamp MHL Style Ocean](img/preview-ocean.webp)
-
-### Forest
-
-![Lava Lamp MHL Style Forest](img/preview-forest.webp)
-
-## Configuration
-
-There's no configuration required, but if you fancy specific theme style, you can set it
-by editing `/usr/share/sddm/themes/lavalamp-mhl/theme.conf` file as per instructions provided
-in that file.
+Interested in contributing to the project? See [developer docs](docs/dev.md) first.
 
 ## Feedback
 

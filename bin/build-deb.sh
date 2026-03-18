@@ -150,28 +150,6 @@ Description: ${DESCRIPTION}
 Homepage: ${HOMEPAGE}
 EOF
 
-# Create DEBIAN/postinst script (post-installation)
-echo "Creating post-installation script…"
-cat > "${DEBIAN_DIR}/postinst" << 'EOF'
-#!/bin/sh
-set -e
-
-echo "SDDM Lava Lamp MHL theme installed successfully!"
-echo
-echo "To activate the theme:"
-echo "- KDE System Settings: Login Screen (SDDM) -> Select 'Lava Lamp MHL'"
-echo "- Or manually edit /etc/sddm.conf: Current=lavalamp-mhl"
-echo "- Then restart SDDM: sudo systemctl restart sddm"
-echo
-echo "Theme configuration: /usr/share/sddm/themes/lavalamp-mhl/theme.conf"
-
-#DEBHELPER#
-
-exit 0
-EOF
-
-chmod 755 "${DEBIAN_DIR}/postinst"
-
 # Create DEBIAN/prerm script (pre-removal)
 echo "Creating pre-removal script…"
 cat > "${DEBIAN_DIR}/prerm" << 'EOF'

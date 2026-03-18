@@ -1,0 +1,95 @@
+##################################################################################
+#
+# PR Branch Sync Notifier (1/2)
+#
+# Author: Marcin Orlowski <mail (#) marcinOrlowski (.) com>
+#
+###################################################################################
+#
+# This workflow triggers when the target branch (dev) is updated and dispatches
+# repository events to re-trigger the PR Branch Sync Check on all open PRs
+# targeting that branch.
+#
+# Why this is needed:
+# - The pr-branch-sync.yml workflow only triggers on PR events (opened, reopened,
+#   synchronize)
+# - When dev is updated by merging another PR, existing open PRs become outdated
+#   but their sync checks don't re-run automatically
+# - This workflow bridges that gap by notifying all affected PRs
+#
+# How it works:
+# 1. Triggers on push to dev branch
+# 2. Lists all open PRs targeting dev
+# 3. Dispatches a repository_dispatch event for each PR
+# 4. The pr-branch-sync.yml workflow receives these events and re-validates
+#
+##################################################################################
+
+name: "PR Branch Sync Notifier"
+
+on:
+  push:
+    branches:
+      - dev
+
+permissions:
+  contents: write
+  pull-requests: read
+
+jobs:
+  notify_open_prs:
+    name: "Notify Open PRs"
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: "Dispatch sync check for open PRs"
+        uses: actions/github-script@v6
+        with:
+          script: |
+            const targetBranch = 'dev';
+
+            console.log(`Target branch ${targetBranch} was updated`);
+            console.log(`Commit: ${context.sha}`);
+
+            // List open PRs targeting the updated branch.
+            // NOTE: This returns only the first page (~30 PRs). For this project's scale
+            // that is sufficient. If pagination is ever needed, use github.paginate() instead.
+            const { data: pullRequests } = await github.rest.pulls.list({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              state: 'open',
+              base: targetBranch
+            });
+
+            console.log(`Found ${pullRequests.length} open PR(s) targeting ${targetBranch}`);
+
+            if (pullRequests.length === 0) {
+              console.log('No open PRs to notify');
+              return;
+            }
+
+            // Dispatch repository event for each open PR
+            for (const pr of pullRequests) {
+              console.log(`Dispatching sync check for PR #${pr.number}: ${pr.title}`);
+              console.log(`  Head ref: ${pr.head.ref}`);
+              console.log(`  Head SHA: ${pr.head.sha}`);
+
+              try {
+                await github.rest.repos.createDispatchEvent({
+                  owner: context.repo.owner,
+                  repo: context.repo.repo,
+                  event_type: 'pr-branch-sync-check',
+                  client_payload: {
+                    pr_number: pr.number,
+                    head_ref: pr.head.ref,
+                    base_ref: pr.base.ref,
+                    head_sha: pr.head.sha
+                  }
+                });
+                console.log(`   Dispatch sent for PR #${pr.number}`);
+              } catch (error) {
+                console.error(`   ** Failed to dispatch for PR #${pr.number}: ${error.message}`);
+              }
+            }
+
+            console.log('Done notifying all open PRs');

@@ -22,8 +22,9 @@ set -uo pipefail
 # NOTE: our root dir means parent folder of where scripts lives
 # shellcheck disable=SC2155
 readonly SCRIPT_DIR="$(dirname "$(realpath "${0}")")"
-readonly ROOT_DIR="$(dirname "${SCRIPT_DIR}")"
-pushd "${ROOT_DIR}" > /dev/null
+ROOT_DIR="$(dirname "${SCRIPT_DIR}")"
+readonly ROOT_DIR
+pushd "${ROOT_DIR}" > /dev/null || exit
 
 SOURCE_DIR="${ROOT_DIR}/src"
 BUILD_DIR="${ROOT_DIR}/build"
@@ -33,26 +34,30 @@ PKG_NAME="sddm-theme-lavalamp-mhl"
 ARCH="all"
 
 # Validate source directory exists
-if [ ! -d "$SOURCE_DIR" ]; then
-    echo "ERROR: Source directory not found: $SOURCE_DIR"
+if [ ! -d "${SOURCE_DIR}" ]; then
+    echo "ERROR: Source directory not found: ${SOURCE_DIR}"
     echo "Please ensure you're running this script from the project root."
     exit 1
 fi
 
 # Read version from metadata.desktop file
 METADATA_FILE="${ROOT_DIR}/src/metadata.desktop"
-if [ ! -f "$METADATA_FILE" ]; then
-    echo "ERROR: Metadata file not found: $METADATA_FILE"
+if [ ! -f "${METADATA_FILE}" ]; then
+    echo "ERROR: Metadata file not found: ${METADATA_FILE}"
     exit 1
 fi
 
-VERSION=$(grep "^Version=" "$METADATA_FILE" | cut -d'=' -f2 | tr -d '\r\n')
-if [ -z "$VERSION" ]; then
-    echo "ERROR: Version not found in $METADATA_FILE"
+VERSION=$(grep "^Version=" "${METADATA_FILE}" | cut -d'=' -f2 | tr -d '\r\n')
+if [ -z "${VERSION}" ]; then
+    echo "ERROR: Version not found in ${METADATA_FILE}"
     exit 1
 fi
 
-echo "Version read from metadata: $VERSION"
+echo "Version read from metadata: ${VERSION}"
+
+# Inject version into theme.conf so QML can read it at runtime
+THEME_CONF="${SOURCE_DIR}/theme.conf"
+sed -i "s/^version=.*/version=${VERSION}/" "${THEME_CONF}"
 
 # Directories
 THEME_INSTALL_DIR="${BUILD_DIR}/lavalamp-mhl"
@@ -62,18 +67,18 @@ echo "Building package: ${PKG_NAME}_${VERSION}_${ARCH}.zip"
 echo
 
 # Clean and create build directory
-echo "Preparing build directory..."
-rm -rf "$BUILD_DIR"
-mkdir -p "$THEME_INSTALL_DIR"
+echo "Preparing build directory…"
+rm -rf "${BUILD_DIR}"
+mkdir -p "${THEME_INSTALL_DIR}"
 
 # Copy theme files to package directory
-echo "Copying theme files..."
-cp -r "$SOURCE_DIR"/* *.md "$THEME_INSTALL_DIR/"
+echo "Copying theme files…"
+cp -r "${SOURCE_DIR}"/* ./*.md "${THEME_INSTALL_DIR}/"
 
 # Remove test scripts from package (not needed in installation)
-rm -f "$THEME_INSTALL_DIR"/test-*.sh
+rm -f "${THEME_INSTALL_DIR}"/test-*.sh
 
-cd "$BUILD_DIR"
+cd "${BUILD_DIR}" || exit
 
 ls -ld
 
@@ -84,13 +89,13 @@ ZIP_FULL="${ZIP_DIR}/${ZIP_FILE}"
 
 # Create ZIP archive
 zip -r "${ZIP_FILE}" "lavalamp-mhl"
-mv "$ZIP_FILE" "$ZIP_DIR/"
+mv "${ZIP_FILE}" "${ZIP_DIR}/"
 
 echo
 echo "=== Package built successfully! ==="
-echo "Package: $ZIP_FULL"
-echo "Size: $(du -h "$ZIP_FULL" | cut -f1)"
+echo "Package: ${ZIP_FULL}"
+echo "Size: $(du -h "${ZIP_FULL}" | cut -f1)"
 echo
 
 # Clean up build directory
-rm -rf "$BUILD_DIR"
+rm -rf "${BUILD_DIR}"
