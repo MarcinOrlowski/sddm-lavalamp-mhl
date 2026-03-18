@@ -4,9 +4,10 @@
 
 You can install Lava Lamp MHL theme in multiple ways:
 
+- using PPA on Ubuntu (recommended for automatic updates)
 - using KDE store via KDE SDDM control panel
-- manually by downloading the ZIP archive
 - installing Debian/Ubuntu package (.deb)
+- manually by downloading the ZIP archive
 
 ### KDE Store
 
@@ -20,9 +21,25 @@ To install the Lava Lamp MHL theme from KDE Store use SDDM control panel built i
 - Search for `Lava Lamp MHL` and install it.
 - Click `Apply` button to apply the theme.
 
+### PPA (Ubuntu)
+
+The easiest way to install on Ubuntu is via the PPA, which provides automatic updates:
+
+```bash
+sudo add-apt-repository ppa:marcinorlowski/ppa
+sudo apt update
+sudo apt install sddm-theme-lavalamp-mhl
+```
+
+Then enable the theme:
+
+- Go to `Settings -> System Settings -> Login Screen (SDDM)`,
+- Select `Lava Lamp MHL` from the theme list,
+- Click `Apply` button to apply the theme.
+
 ### Debian/Ubuntu Package
 
-For Debian and Ubuntu users, you can install the theme using a `.deb` package:
+Alternatively, you can install the theme manually using a `.deb` package:
 
 - Go to [Releases](https://github.com/MarcinOrlowski/sddm-lavalamp-mhl/releases) section
 - Download the latest `sddm-theme-lavalamp-mhl_<VERSION>_all.deb` file

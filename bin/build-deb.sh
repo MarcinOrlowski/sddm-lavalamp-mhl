@@ -283,42 +283,7 @@ EOF
 # Generate Debian changelog from CHANGES.md
 echo "Generating changelog…"
 CHANGELOG_FILE="${PACKAGE_DIR}/usr/share/doc/${PKG_NAME}/changelog.Debian"
-CHANGES_MD="${ROOT_DIR}/CHANGES.md"
-
-if [ ! -f "${CHANGES_MD}" ]; then
-    echo "ERROR: CHANGES.md not found: ${CHANGES_MD}"
-    exit 1
-fi
-
-# Parse CHANGES.md into Debian changelog format
-CURRENT_VERSION=""
-CURRENT_DATE=""
-while IFS= read -r LINE; do
-    # Match version headers: ## v2.1.0 (2026-03-18)
-    if [[ "${LINE}" =~ ^##\ v([0-9]+\.[0-9]+\.[0-9]+)\ \(([0-9]{4}-[0-9]{2}-[0-9]{2})\) ]]; then
-        # Close previous entry if any
-        if [ -n "${CURRENT_VERSION}" ]; then
-            echo "" >> "${CHANGELOG_FILE}"
-            echo " -- ${MAINTAINER}  ${CURRENT_DATE}" >> "${CHANGELOG_FILE}"
-            echo "" >> "${CHANGELOG_FILE}"
-        fi
-        CURRENT_VERSION="${BASH_REMATCH[1]}"
-        # Convert YYYY-MM-DD to RFC 2822 date (required by Debian changelog)
-        CURRENT_DATE=$(date -d "${BASH_REMATCH[2]}" -R)
-        echo "${PKG_NAME} (${CURRENT_VERSION}) unstable; urgency=low" >> "${CHANGELOG_FILE}"
-        echo "" >> "${CHANGELOG_FILE}"
-    elif [[ "${LINE}" =~ ^-\ (.+) ]] && [ -n "${CURRENT_VERSION}" ]; then
-        echo "  * ${BASH_REMATCH[1]}" >> "${CHANGELOG_FILE}"
-    fi
-done < "${CHANGES_MD}"
-
-# Close last entry
-if [ -n "${CURRENT_VERSION}" ]; then
-    echo "" >> "${CHANGELOG_FILE}"
-    echo " -- ${MAINTAINER}  ${CURRENT_DATE}" >> "${CHANGELOG_FILE}"
-    echo "" >> "${CHANGELOG_FILE}"
-fi
-
+"${SCRIPT_DIR}/gen-deb-changelog.sh" "${ROOT_DIR}/CHANGES.md" "${CHANGELOG_FILE}" "${PKG_NAME}" "${MAINTAINER}"
 gzip -9 "${CHANGELOG_FILE}"
 
 # Calculate installed size (in KB)
