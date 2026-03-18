@@ -40,7 +40,8 @@ set -euo pipefail
 
 # Parse command-line arguments
 GPG_KEY=""
-SERIES="noble"
+SERIES="questing"
+DEB_REVISION="1"
 UPLOAD=false
 PPA=""
 
@@ -56,10 +57,18 @@ while [[ $# -gt 0 ]]; do
             ;;
         --series)
             if [ -z "${2:-}" ]; then
-                echo "ERROR: --series requires a series name (e.g. noble, jammy)"
+                echo "ERROR: --series requires a series name (e.g. questing, plucky)"
                 exit 1
             fi
             SERIES="$2"
+            shift 2
+            ;;
+        --revision)
+            if [ -z "${2:-}" ]; then
+                echo "ERROR: --revision requires a number"
+                exit 1
+            fi
+            DEB_REVISION="$2"
             shift 2
             ;;
         --upload)
@@ -79,7 +88,8 @@ while [[ $# -gt 0 ]]; do
             echo
             echo "Options:"
             echo "  --gpg-key ID       GPG key ID for signing (required)"
-            echo "  --series NAME      Ubuntu series codename (default: noble)"
+            echo "  --series NAME      Ubuntu series codename (default: questing)"
+            echo "  --revision N       Debian revision number (default: 1)"
             echo "  --upload           Upload to PPA after building via dput"
             echo "  --ppa USER/NAME    PPA target (default: from ~/.dput.cf)"
             echo "  -h, --help         Show this help message"
@@ -137,7 +147,7 @@ if [ ! -f "${CHANGES_MD}" ]; then
     exit 1
 fi
 
-DEB_VERSION="${VERSION}-1"
+DEB_VERSION="${VERSION}-${DEB_REVISION}"
 ORIG_TARBALL="${PKG_NAME}_${VERSION}.orig.tar.gz"
 BUILD_DIR="${ROOT_DIR}/build/ppa"
 SOURCE_DIR="${BUILD_DIR}/${PKG_NAME}-${VERSION}"
@@ -158,9 +168,10 @@ echo "Copying theme sources…"
 cp -r "${ROOT_DIR}/src"/* "${SOURCE_DIR}/"
 rm -f "${SOURCE_DIR}"/test-*.sh
 
-# Create orig tarball (must be created BEFORE debian/ directory exists)
+# Create reproducible orig tarball (must be created BEFORE debian/ directory exists)
 echo "Creating orig tarball…"
-tar -czf "${BUILD_DIR}/${ORIG_TARBALL}" -C "${BUILD_DIR}" "${PKG_NAME}-${VERSION}"
+tar --sort=name --owner=root:0 --group=root:0 \
+    -czf "${BUILD_DIR}/${ORIG_TARBALL}" -C "${BUILD_DIR}" "${PKG_NAME}-${VERSION}"
 
 # Create debian/ directory
 echo "Creating debian/ packaging…"
@@ -298,7 +309,7 @@ EOF
 
 # debian/changelog — parse from CHANGES.md
 echo "Generating debian/changelog…"
-"${SCRIPT_DIR}/gen-deb-changelog.sh" "${CHANGES_MD}" "${DEBIAN_DIR}/changelog" "${PKG_NAME}" "${MAINTAINER}" "${SERIES}" "-1"
+"${SCRIPT_DIR}/gen-deb-changelog.sh" "${CHANGES_MD}" "${DEBIAN_DIR}/changelog" "${PKG_NAME}" "${MAINTAINER}" "${SERIES}" "-${DEB_REVISION}"
 
 # Build signed source package
 echo
