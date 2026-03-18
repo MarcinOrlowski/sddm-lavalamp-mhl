@@ -1,5 +1,8 @@
 # Changelog
 
+## v2.2.0 (unreleased)
+- Added automatic theme cycling with configurable delay and cross-fade duration.
+
 ## v2.1.0 (2026-03-18)
 - Added configurable orb count in `theme.conf` (range: 16-70, default: 35).
 - Added theme name label next to the theme switcher button.
