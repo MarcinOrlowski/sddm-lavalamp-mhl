@@ -181,7 +181,18 @@ Rectangle {
         readonly property real formOpacity: 0.85
         readonly property bool debugAlwaysShowSessionSelector: false
         readonly property bool showThemeName: true
-        readonly property int themeTransitionDuration: 1500
+        readonly property int themeTransitionDuration: {
+            var val = parseFloat(config.stringValue("themeTransitionDuration").replace(",", "."))
+            return (isNaN(val) || val <= 0) ? 1500 : Math.round(val * 1000)
+        }
+        readonly property bool autoThemeChange: {
+            var val = config.stringValue("autoThemeChange")
+            return val === "" ? true : val.toLowerCase() === "true"
+        }
+        readonly property int autoThemeChangeDelay: {
+            var val = parseFloat(config.stringValue("autoThemeChangeDelay").replace(",", "."))
+            return (isNaN(val) || val <= 0) ? 30000 : Math.round(val * 1000)
+        }
     }
 
     // Visual themes (colors and rendering only)
@@ -534,6 +545,10 @@ Rectangle {
         currentTheme = availableThemes[nextIndex]
         targetTheme = activeTheme
         themeTransitionAnimation.restart()
+        // Reset auto-change timer on manual cycle
+        if (simulationConfig.autoThemeChange) {
+            autoThemeChangeTimer.restart()
+        }
     }
 
     // Gradient mode mapping
@@ -692,6 +707,15 @@ Rectangle {
         interval: 500
         repeat: false
         onTriggered: hideCooldown = false
+    }
+
+    // Auto theme change timer - cycles through themes automatically
+    Timer {
+        id: autoThemeChangeTimer
+        interval: simulationConfig.autoThemeChangeDelay
+        running: simulationConfig.autoThemeChange
+        repeat: true
+        onTriggered: cycleTheme()
     }
 
     // Activity tracking timer - clears focus after inactivity

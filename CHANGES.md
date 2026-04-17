@@ -1,5 +1,9 @@
 # Changelog
 
+## v2.2.0 (TBD)
+- Added smooth color transitions when cycling between themes.
+- Added automatic theme cycling with configurable delay and cross-fade duration.
+
 ## v2.1.0 (2026-03-18)
 - Added configurable orb count in `theme.conf` (range: 16-70, default: 35).
 - Added theme name label next to the theme switcher button.
@@ -7,7 +11,6 @@
 - Fixed `test-virtual-display` helper always going full screen on Wayland.
 - Corrected theme version not showing proper version on the theme screen.
 - Tweaked glow intensity for better theme visibility.
-- Added smooth color transitions when cycling between themes.
 - Added size-based speed buckets so smaller orbs move faster and larger orbs move slower.
 - Adjusted minimum metaball speed to prevent near-stationary metaballs.
 - Fixed UI auto-hide being immediately undone by cursor-hiding overlay.
